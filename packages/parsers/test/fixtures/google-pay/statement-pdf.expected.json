@@ -1,0 +1,211 @@
+{
+	"upiApp": "google_pay",
+	"layout": "statement_pdf",
+	"parserVersion": "google-pay/statement-pdf@1",
+	"periodStart": "2018-04-01",
+	"periodEnd": "2018-09-30",
+	"declaredTotals": {
+		"sentPaise": 1276155,
+		"receivedPaise": 96000
+	},
+	"transactions": [
+		{
+			"occurredAt": "2018-04-01T09:11:00+05:30",
+			"direction": "sent",
+			"amountPaise": 8919,
+			"counterpartyName": "Counterparty 001",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000001",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-01T09:13:00+05:30",
+			"direction": "sent",
+			"amountPaise": 16800,
+			"counterpartyName": "Counterparty 002",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000002",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-01T14:25:00+05:30",
+			"direction": "sent",
+			"amountPaise": 24800,
+			"counterpartyName": "Counterparty 003",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000003",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-01T16:42:00+05:30",
+			"direction": "sent",
+			"amountPaise": 32700,
+			"counterpartyName": "Counterparty 004",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000004",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-01T16:59:00+05:30",
+			"direction": "sent",
+			"amountPaise": 40595,
+			"counterpartyName": "Counterparty 005",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000005",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-02T10:32:00+05:30",
+			"direction": "sent",
+			"amountPaise": 48500,
+			"counterpartyName": "Counterparty 006",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000006",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-02T10:53:00+05:30",
+			"direction": "sent",
+			"amountPaise": 56400,
+			"counterpartyName": "Counterparty 007",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000007",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-02T14:08:00+05:30",
+			"direction": "sent",
+			"amountPaise": 64400,
+			"counterpartyName": "Counterparty 008",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000008",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-02T20:03:00+05:30",
+			"direction": "sent",
+			"amountPaise": 72271,
+			"counterpartyName": "Counterparty 009",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000009",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-02T21:22:00+05:30",
+			"direction": "sent",
+			"amountPaise": 80200,
+			"counterpartyName": "Counterparty 010",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000010",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-03T13:25:00+05:30",
+			"direction": "sent",
+			"amountPaise": 88100,
+			"counterpartyName": "Counterparty 011",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000011",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-03T19:07:00+05:30",
+			"direction": "received",
+			"amountPaise": 96000,
+			"counterpartyName": "Counterparty 001",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000012",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-03T19:36:00+05:30",
+			"direction": "sent",
+			"amountPaise": 103947,
+			"counterpartyName": "Counterparty 012",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000013",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-04T09:51:00+05:30",
+			"direction": "sent",
+			"amountPaise": 111900,
+			"counterpartyName": "Counterparty 011",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000014",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-04T19:23:00+05:30",
+			"direction": "sent",
+			"amountPaise": 119800,
+			"counterpartyName": "Counterparty 013",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000015",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-04T19:24:00+05:30",
+			"direction": "sent",
+			"amountPaise": 127700,
+			"counterpartyName": "Counterparty 014",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000016",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-04T19:30:00+05:30",
+			"direction": "sent",
+			"amountPaise": 135623,
+			"counterpartyName": "Counterparty 015",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000017",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		},
+		{
+			"occurredAt": "2018-04-05T13:07:00+05:30",
+			"direction": "sent",
+			"amountPaise": 143500,
+			"counterpartyName": "Counterparty 016",
+			"counterpartyUpiId": null,
+			"upiReference": "900000000018",
+			"appTransactionId": null,
+			"fundingAccount": "Example Bank 0001",
+			"note": null
+		}
+	]
+}

@@ -1,0 +1,21 @@
+{
+	"name": "@khata/parsers",
+	"version": "0.0.0",
+	"description": "Parsers that turn Indian UPI app statements into typed transactions.",
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check-types": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"unpdf": "catalog:"
+	},
+	"devDependencies": {
+		"@khata/config": "workspace:*",
+		"@types/bun": "catalog:",
+		"typescript": "catalog:"
+	}
+}

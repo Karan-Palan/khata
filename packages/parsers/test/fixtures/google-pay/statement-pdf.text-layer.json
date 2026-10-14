@@ -1,0 +1,664 @@
+{
+	"pages": [
+		{
+			"pageNumber": 1,
+			"items": [
+				{
+					"text": "Transaction statement",
+					"x": 447.6,
+					"y": 806.3
+				},
+				{
+					"text": "9999999999, someone@example.com",
+					"x": 335.4,
+					"y": 791.3
+				},
+				{
+					"text": "Note: This statement reflects payments made by you on the Google Pay app. Self transfer payments are not included in the total money paid and",
+					"x": 24,
+					"y": 68.3
+				},
+				{
+					"text": "received. Any payments transactions and activity deleted from your Google Account will not show up in this statement.",
+					"x": 24,
+					"y": 58.3
+				},
+				{
+					"text": "Page 1 of 2",
+					"x": 535.1,
+					"y": 18.3
+				},
+				{
+					"text": "Transaction statement period",
+					"x": 24,
+					"y": 704.3
+				},
+				{
+					"text": "01 April 2018 - 30 September 2018",
+					"x": 24,
+					"y": 686.5
+				},
+				{
+					"text": "Sent",
+					"x": 333.3,
+					"y": 704.3
+				},
+				{
+					"text": "₹12,761.55",
+					"x": 311.1,
+					"y": 686.5
+				},
+				{
+					"text": "Received",
+					"x": 491.9,
+					"y": 704.3
+				},
+				{
+					"text": "₹960",
+					"x": 489.7,
+					"y": 686.5
+				},
+				{
+					"text": "Date & time",
+					"x": 24,
+					"y": 621.7
+				},
+				{
+					"text": "Transaction details",
+					"x": 136.4,
+					"y": 621.7
+				},
+				{
+					"text": "Amount",
+					"x": 535.6,
+					"y": 621.7
+				},
+				{
+					"text": "01 Apr, 2018",
+					"x": 24,
+					"y": 593.1
+				},
+				{
+					"text": "09:11 AM",
+					"x": 24,
+					"y": 577.9
+				},
+				{
+					"text": "Paid to Counterparty 001",
+					"x": 136.4,
+					"y": 593.1
+				},
+				{
+					"text": "UPI Transaction ID: 900000000001",
+					"x": 136.4,
+					"y": 577.9
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 561.7
+				},
+				{
+					"text": "₹89.19",
+					"x": 534,
+					"y": 593.1
+				},
+				{
+					"text": "01 Apr, 2018",
+					"x": 24,
+					"y": 529.6
+				},
+				{
+					"text": "09:13 AM",
+					"x": 24,
+					"y": 514.3
+				},
+				{
+					"text": "Paid to Counterparty 002",
+					"x": 136.4,
+					"y": 529.6
+				},
+				{
+					"text": "UPI Transaction ID: 900000000002",
+					"x": 136.4,
+					"y": 514.3
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 498.2
+				},
+				{
+					"text": "₹168",
+					"x": 535.5,
+					"y": 529.6
+				},
+				{
+					"text": "01 Apr, 2018",
+					"x": 24,
+					"y": 466.1
+				},
+				{
+					"text": "02:25 PM",
+					"x": 24,
+					"y": 450.8
+				},
+				{
+					"text": "Paid to Counterparty 003",
+					"x": 136.4,
+					"y": 466.1
+				},
+				{
+					"text": "UPI Transaction ID: 900000000003",
+					"x": 136.4,
+					"y": 450.8
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 434.7
+				},
+				{
+					"text": "₹248",
+					"x": 555.2,
+					"y": 466.1
+				},
+				{
+					"text": "01 Apr, 2018",
+					"x": 24,
+					"y": 402.5
+				},
+				{
+					"text": "04:42 PM",
+					"x": 24,
+					"y": 387.3
+				},
+				{
+					"text": "Paid to Counterparty 004",
+					"x": 136.4,
+					"y": 402.5
+				},
+				{
+					"text": "UPI Transaction ID: 900000000004",
+					"x": 136.4,
+					"y": 387.3
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 371.1
+				},
+				{
+					"text": "₹327",
+					"x": 551.1,
+					"y": 402.5
+				},
+				{
+					"text": "01 Apr, 2018",
+					"x": 24,
+					"y": 339
+				},
+				{
+					"text": "04:59 PM",
+					"x": 24,
+					"y": 323.7
+				},
+				{
+					"text": "Paid to Counterparty 005",
+					"x": 136.4,
+					"y": 339
+				},
+				{
+					"text": "UPI Transaction ID: 900000000005",
+					"x": 136.4,
+					"y": 323.7
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 307.6
+				},
+				{
+					"text": "₹405.95",
+					"x": 555.4,
+					"y": 339
+				},
+				{
+					"text": "02 Apr, 2018",
+					"x": 24,
+					"y": 275.5
+				},
+				{
+					"text": "10:32 AM",
+					"x": 24,
+					"y": 260.2
+				},
+				{
+					"text": "Paid to Counterparty 006",
+					"x": 136.4,
+					"y": 275.5
+				},
+				{
+					"text": "UPI Transaction ID: 900000000006",
+					"x": 136.4,
+					"y": 260.2
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 244
+				},
+				{
+					"text": "₹485",
+					"x": 555.4,
+					"y": 275.5
+				},
+				{
+					"text": "02 Apr, 2018",
+					"x": 24,
+					"y": 211.9
+				},
+				{
+					"text": "10:53 AM",
+					"x": 24,
+					"y": 196.6
+				},
+				{
+					"text": "Paid to Counterparty 007",
+					"x": 136.4,
+					"y": 211.9
+				},
+				{
+					"text": "UPI Transaction ID: 900000000007",
+					"x": 136.4,
+					"y": 196.6
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 180.5
+				},
+				{
+					"text": "₹564",
+					"x": 555.4,
+					"y": 211.9
+				},
+				{
+					"text": "02 Apr, 2018",
+					"x": 24,
+					"y": 148.4
+				},
+				{
+					"text": "02:08 PM",
+					"x": 24,
+					"y": 133.1
+				},
+				{
+					"text": "Paid to Counterparty 008",
+					"x": 136.4,
+					"y": 148.4
+				},
+				{
+					"text": "UPI Transaction ID: 900000000008",
+					"x": 136.4,
+					"y": 133.1
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 117
+				},
+				{
+					"text": "₹644",
+					"x": 554.4,
+					"y": 148.4
+				}
+			]
+		},
+		{
+			"pageNumber": 2,
+			"items": [
+				{
+					"text": "Transaction statement",
+					"x": 447.6,
+					"y": 806.3
+				},
+				{
+					"text": "9999999999, someone@example.com",
+					"x": 335.4,
+					"y": 791.3
+				},
+				{
+					"text": "Note: This statement reflects payments made by you on the Google Pay app. Self transfer payments are not included in the total money paid and",
+					"x": 24,
+					"y": 68.3
+				},
+				{
+					"text": "received. Any payments transactions and activity deleted from your Google Account will not show up in this statement.",
+					"x": 24,
+					"y": 58.3
+				},
+				{
+					"text": "Page 2 of 2",
+					"x": 533.8,
+					"y": 18.3
+				},
+				{
+					"text": "Date & time",
+					"x": 24,
+					"y": 728.2
+				},
+				{
+					"text": "Transaction details",
+					"x": 136.4,
+					"y": 728.2
+				},
+				{
+					"text": "Amount",
+					"x": 535.6,
+					"y": 728.2
+				},
+				{
+					"text": "02 Apr, 2018",
+					"x": 24,
+					"y": 699.7
+				},
+				{
+					"text": "08:03 PM",
+					"x": 24,
+					"y": 684.4
+				},
+				{
+					"text": "Paid to Counterparty 009",
+					"x": 136.4,
+					"y": 699.7
+				},
+				{
+					"text": "UPI Transaction ID: 900000000009",
+					"x": 136.4,
+					"y": 684.4
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 668.3
+				},
+				{
+					"text": "₹722.71",
+					"x": 554.5,
+					"y": 699.7
+				},
+				{
+					"text": "02 Apr, 2018",
+					"x": 24,
+					"y": 636.1
+				},
+				{
+					"text": "09:22 PM",
+					"x": 24,
+					"y": 620.9
+				},
+				{
+					"text": "Paid to Counterparty 010",
+					"x": 136.4,
+					"y": 636.1
+				},
+				{
+					"text": "UPI Transaction ID: 900000000010",
+					"x": 136.4,
+					"y": 620.9
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 604.7
+				},
+				{
+					"text": "₹802",
+					"x": 554.4,
+					"y": 636.1
+				},
+				{
+					"text": "03 Apr, 2018",
+					"x": 24,
+					"y": 572.6
+				},
+				{
+					"text": "01:25 PM",
+					"x": 24,
+					"y": 557.3
+				},
+				{
+					"text": "Paid to Counterparty 011",
+					"x": 136.4,
+					"y": 572.6
+				},
+				{
+					"text": "UPI Transaction ID: 900000000011",
+					"x": 136.4,
+					"y": 557.3
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 541.2
+				},
+				{
+					"text": "₹881",
+					"x": 550.2,
+					"y": 572.6
+				},
+				{
+					"text": "03 Apr, 2018",
+					"x": 24,
+					"y": 509.1
+				},
+				{
+					"text": "07:07 PM",
+					"x": 24,
+					"y": 493.8
+				},
+				{
+					"text": "Received from Counterparty 001",
+					"x": 136.4,
+					"y": 509.1
+				},
+				{
+					"text": "UPI Transaction ID: 900000000012",
+					"x": 136.4,
+					"y": 493.8
+				},
+				{
+					"text": "Paid to Example Bank 0001",
+					"x": 153.4,
+					"y": 477.7
+				},
+				{
+					"text": "₹960",
+					"x": 539.7,
+					"y": 509.1
+				},
+				{
+					"text": "03 Apr, 2018",
+					"x": 24,
+					"y": 445.5
+				},
+				{
+					"text": "07:36 PM",
+					"x": 24,
+					"y": 430.3
+				},
+				{
+					"text": "Paid to Counterparty 012",
+					"x": 136.4,
+					"y": 445.5
+				},
+				{
+					"text": "UPI Transaction ID: 900000000013",
+					"x": 136.4,
+					"y": 430.3
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 414.1
+				},
+				{
+					"text": "₹1,039.47",
+					"x": 536,
+					"y": 445.5
+				},
+				{
+					"text": "04 Apr, 2018",
+					"x": 24,
+					"y": 382
+				},
+				{
+					"text": "09:51 AM",
+					"x": 24,
+					"y": 366.7
+				},
+				{
+					"text": "Paid to Counterparty 011",
+					"x": 136.4,
+					"y": 382
+				},
+				{
+					"text": "UPI Transaction ID: 900000000014",
+					"x": 136.4,
+					"y": 366.7
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 350.6
+				},
+				{
+					"text": "₹1,119",
+					"x": 549.7,
+					"y": 382
+				},
+				{
+					"text": "04 Apr, 2018",
+					"x": 24,
+					"y": 318.5
+				},
+				{
+					"text": "07:23 PM",
+					"x": 24,
+					"y": 303.2
+				},
+				{
+					"text": "Paid to Counterparty 013",
+					"x": 136.4,
+					"y": 318.5
+				},
+				{
+					"text": "UPI Transaction ID: 900000000015",
+					"x": 136.4,
+					"y": 303.2
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 287.1
+				},
+				{
+					"text": "₹1,198",
+					"x": 554.6,
+					"y": 318.5
+				},
+				{
+					"text": "04 Apr, 2018",
+					"x": 24,
+					"y": 254.9
+				},
+				{
+					"text": "07:24 PM",
+					"x": 24,
+					"y": 239.7
+				},
+				{
+					"text": "Paid to Counterparty 014",
+					"x": 136.4,
+					"y": 254.9
+				},
+				{
+					"text": "UPI Transaction ID: 900000000016",
+					"x": 136.4,
+					"y": 239.7
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 223.5
+				},
+				{
+					"text": "₹1,277",
+					"x": 554.5,
+					"y": 254.9
+				},
+				{
+					"text": "04 Apr, 2018",
+					"x": 24,
+					"y": 191.4
+				},
+				{
+					"text": "07:30 PM",
+					"x": 24,
+					"y": 176.1
+				},
+				{
+					"text": "Paid to Counterparty 015",
+					"x": 136.4,
+					"y": 191.4
+				},
+				{
+					"text": "UPI Transaction ID: 900000000017",
+					"x": 136.4,
+					"y": 176.1
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 160
+				},
+				{
+					"text": "₹1,356.23",
+					"x": 550.8,
+					"y": 191.4
+				},
+				{
+					"text": "05 Apr, 2018",
+					"x": 24,
+					"y": 127.9
+				},
+				{
+					"text": "01:07 PM",
+					"x": 24,
+					"y": 112.6
+				},
+				{
+					"text": "Paid to Counterparty 016",
+					"x": 136.4,
+					"y": 127.9
+				},
+				{
+					"text": "UPI Transaction ID: 900000000018",
+					"x": 136.4,
+					"y": 112.6
+				},
+				{
+					"text": "Paid by Example Bank 0001",
+					"x": 153.4,
+					"y": 96.4
+				},
+				{
+					"text": "₹1,435",
+					"x": 548.6,
+					"y": 127.9
+				}
+			]
+		}
+	]
+}
