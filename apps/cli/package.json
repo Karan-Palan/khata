@@ -11,6 +11,7 @@
 		"check-types": "tsc -p tsconfig.json"
 	},
 	"dependencies": {
+		"@khata/parsers": "workspace:*",
 		"@modelcontextprotocol/server": "catalog:",
 		"zod": "catalog:"
 	},

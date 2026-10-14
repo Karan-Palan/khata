@@ -46,9 +46,9 @@ Contributors fork, branch as `<github-login>/<short-description>`, open a draft 
 - `docker/`: local Postgres for developing the cloud store.
 - `.claude/settings.json`, `.codex/config.toml`: agent permissions, including the `.env` lock.
 - `.agents/skills`: pstack engineering skills for Codex, symlinked into `.claude/skills` for Claude Code. Managed by `bunx skills`; never edit by hand.
-- `packages/parsers` (planned): statement parsers. Bytes in, typed statement out. No file system, network, clock, environment, or database access. Runs on Bun, Node, and in browsers. Published on its own.
+- `packages/parsers`: statement parsers. Bytes in, typed statement out. No file system, network, clock, environment, or database access. Runs on Bun, Node, and in browsers. Published on its own. Fixtures in `test/fixtures/<upi-app>/` are the specification of each layout.
+- `docs/`: integration notes (`docs/integrations/`) and the measured performance baseline.
 - `plugin/` (planned): the installable agent plugin for Claude Code and Codex, with MCP wiring and skills.
-- `docs/` (planned): decision records and integration notes.
 
 ## Stack
 
@@ -89,7 +89,7 @@ Add a dependency only when Bun or an existing dependency cannot do the job, and 
 ## Privacy and fixtures
 
 - Never commit a real statement or any real name, phone number, email, UPI ID, account number, UPI reference, or amount history. This covers code, fixtures, docs, screenshots, logs, issues, and pull requests.
-- Fixtures come only from `khata fixture` (planned), which anonymizes a statement's text layer on the contributor's machine. Review every fixture diff for leaked identifiers before committing.
+- Fixtures come only from `bun run khata fixture <statement.pdf> <prefix>`, which anonymizes a statement's text layer on the contributor's machine. Review every fixture diff for leaked identifiers before committing.
 - Default tests never call Gmail, Google, or any network service. Live checks are opt-in and documented.
 - User data lives in the user's data directory, never inside the repository.
 
@@ -146,7 +146,7 @@ Add a dependency only when Bun or an existing dependency cannot do the job, and 
 - `bun run check-types`: TypeScript 7 type check
 - `bun test`
 - `bun run check:ci`: lint, types, comment check, and tests, exactly as CI runs them
-- `bun run khata <command>`: run the CLI from source
+- `bun run khata <command>`: run the CLI from source, for example `bun run khata ingest <statement.pdf>`
 - `bun run db:start`, `db:stop`, `db:reset`, `db:psql`: local Postgres in Docker
 - `bun run with-env <command>`: run one command with `.env` loaded, after maintainer approval
 

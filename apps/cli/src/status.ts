@@ -10,6 +10,8 @@ export const ledgerStatusSchema = z.object({
 	schemaVersion: z.number().int(),
 	documentCount: z.number().int(),
 	transactionCount: z.number().int(),
+	firstOccurredAt: z.string().nullable(),
+	lastOccurredAt: z.string().nullable(),
 });
 
 export type LedgerStatus = z.infer<typeof ledgerStatusSchema>;
@@ -19,11 +21,16 @@ export function readLedgerStatus(store: Store): LedgerStatus {
 }
 
 export function formatLedgerStatus(status: LedgerStatus): string {
+	const coverage =
+		status.firstOccurredAt === null || status.lastOccurredAt === null
+			? "empty"
+			: `${status.firstOccurredAt.slice(0, 10)} to ${status.lastOccurredAt.slice(0, 10)}`;
 	return [
 		`khata ${status.version}`,
 		`database      ${status.databasePath}`,
 		`schema        ${status.schemaVersion}`,
-		`documents     ${status.documentCount}`,
+		`statements    ${status.documentCount}`,
 		`transactions  ${status.transactionCount}`,
+		`covers        ${coverage}`,
 	].join("\n");
 }
