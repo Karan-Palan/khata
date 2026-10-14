@@ -1,0 +1,41 @@
+{
+	"name": "@khata/workspace",
+	"private": true,
+	"type": "module",
+	"workspaces": {
+		"packages": [
+			"apps/*",
+			"packages/*"
+		],
+		"catalog": {
+			"@modelcontextprotocol/client": "2.3.1",
+			"@modelcontextprotocol/server": "2.3.1",
+			"@types/bun": "1.4.3",
+			"typescript": "7.0.2",
+			"zod": "4.6.7"
+		}
+	},
+	"scripts": {
+		"prepare": "lefthook install",
+		"check": "biome check --write .",
+		"check-types": "turbo run check-types && tsc -p tsconfig.json",
+		"check:comments": "bun scripts/check-comments.ts",
+		"check:ci": "biome ci . && bun run check-types && bun run check:comments && bun test",
+		"db:start": "docker compose -f docker/compose.yml up -d --wait",
+		"db:stop": "docker compose -f docker/compose.yml stop",
+		"db:reset": "docker compose -f docker/compose.yml down -v && docker compose -f docker/compose.yml up -d --wait",
+		"db:psql": "docker compose -f docker/compose.yml exec postgres psql -U khata -d khata",
+		"khata": "bun apps/cli/src/main.ts",
+		"with-env": "bun --env-file=.env scripts/with-env.ts"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.5.15",
+		"@khata/config": "workspace:*",
+		"@types/bun": "catalog:",
+		"lefthook": "2.2.2",
+		"oxc-parser": "0.154.0",
+		"turbo": "2.11.8",
+		"typescript": "catalog:"
+	},
+	"packageManager": "bun@1.3.14"
+}

@@ -1,0 +1,25 @@
+{
+	"$schema": "https://json.schemastore.org/claude-code-settings.json",
+	"permissions": {
+		"deny": ["Read(.env)", "Edit(.env)"],
+		"ask": ["Bash(bun run with-env *)"]
+	},
+	"sandbox": {
+		"enabled": true,
+		"allowUnsandboxedCommands": false,
+		"excludedCommands": [
+			"bun run with-env *",
+			"bun run db:start",
+			"bun run db:stop",
+			"bun run db:reset",
+			"bun run db:psql",
+			"docker compose *"
+		],
+		"filesystem": {
+			"denyRead": ["./.env", "./**/.env"]
+		},
+		"network": {
+			"allowedDomains": ["registry.npmjs.org", "*.npmjs.org", "github.com", "*.github.com", "*.githubusercontent.com"]
+		}
+	}
+}

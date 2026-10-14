@@ -1,0 +1,9 @@
+default_permissions = "khata"
+
+[permissions.khata]
+description = "Workspace access with the .env secrets file unreadable"
+extends = ":workspace"
+
+[permissions.khata.filesystem.":workspace_roots"]
+".env" = "deny"
+"**/.env" = "deny"

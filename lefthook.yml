@@ -1,0 +1,15 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: biome
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: bun biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+      stage_fixed: true
+    - name: comments
+      glob: "*.{js,ts,cjs,mjs,mts,cts,jsx,tsx}"
+      run: bun scripts/check-comments.ts {staged_files}
+
+commit-msg:
+  jobs:
+    - name: conventional-commit
+      run: bun scripts/check-commit-message.ts {1}
