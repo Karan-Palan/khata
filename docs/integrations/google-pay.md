@@ -26,3 +26,33 @@ Observed in October 2026 on a six-month statement produced by the app's `dart_pd
 - The longest period a single statement can cover.
 - Whether statements are ever password-protected.
 - The line format for self transfers, failed payments, and UPI Lite.
+
+## Google Takeout activity export
+
+Takeout reaches much further back than the in-app statement, so khata reads it for the periods no statement covers.
+
+### Getting the export
+
+At takeout.google.com: Deselect all, select Google Pay, and select My Activity with only Google Pay in its content options and JSON as its format. Export once as a zip. Takeout to Drive, every month or every two months for a year, is the zero-touch alternative. Some browsers unzip the download into a `Takeout` folder; khata reads the folder, the zip, or `MyActivity.json` directly.
+
+### Observed contents
+
+Observed in October 2026 on an export covering almost three years.
+
+- `My Activity/Google Pay/MyActivity.json` holds one entry per Google Pay action: `title`, `time` in UTC, `products`, and `details` with Google's identifier for the payment and, usually, its status.
+- Titles take seven shapes: `Paid ₹<amount> to <name>`, `Paid ₹<amount>`, `Sent ₹<amount>`, `Received ₹<amount> from <name>`, `Received ₹<amount>`, each optionally followed by `using Bank Account XXXXXX<last 4>`. About a quarter of payments carry no counterparty name.
+- Amounts use international digit grouping (`₹123,456.78`, and `₹1234.56` without a comma), unlike the statement.
+- Statuses are Completed, Failed, Pending, and Cancelled; a few entries have no status. In the observed export, most failed and status-less payments in a period with a bank statement did not settle, so khata counts only completed payments.
+- There is no UPI reference, so activity payments cannot be matched to bank rows or statement rows by identity.
+- `Google Pay/My Activity/My Activity.html` repeats the activity as HTML. khata reads only the JSON and asks for a JSON re-export when that is all it finds.
+- `Money sends and requests`, `Google transactions`, `Rewards earned`, and `Group expenses` are not payments khata reads.
+
+### Combining with statements
+
+- Within a statement's period, the statement alone supplies transactions, because its declared totals verify it. Matching activity payments to statement rows by amount and time is unreliable: identical amounts minutes apart get paired with the wrong partner, and some completed activity payments never reached the bank at all.
+- Outside every statement period, completed activity payments are added, identified by Google's payment identifier, and the most recent export decides each payment's status.
+
+### Not yet known
+
+- Whether Google's payment identifier stays the same across separate Takeout exports. Re-ingesting the same export is safe either way, because documents are identified by their bytes.
+- How far back Takeout goes for accounts older than the one observed.

@@ -5,6 +5,8 @@ Measured on 14 October 2026 on an Apple Silicon Mac with Bun 1.3.14. Non-authori
 | Measurement | Result |
 | --- | --- |
 | Ingest a real 89-page Google Pay statement (886 transactions), end to end | 0.33 s wall time, of which 225 ms is PDF text extraction and 3 ms is parsing |
+| Parse a real Google Takeout activity export (about 3,650 payments) | 11 ms |
+| Ingest that statement and that export together, including two ledger rebuilds | 0.33 s wall time |
 | `khata status` | 0.08 to 0.10 s wall time |
 | MCP server cold start until tools are listed | 100 to 118 ms |
 | MCP calls on an 886-transaction ledger, p95 of 20 | under 5 ms for every tool |

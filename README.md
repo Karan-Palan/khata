@@ -2,7 +2,7 @@
 
 Your UPI payment history as a local ledger that AI agents can query through MCP.
 
-khata reads the statements that UPI apps already give you, turns every payment into one clean transaction table on your machine, and lets Claude Code, Codex, or any MCP client answer questions like "how much did I spend in June, and on whom?" from it.
+khata reads the statements and activity exports that UPI apps already give you, turns every payment into one clean transaction table on your machine, and lets Claude Code, Codex, or any MCP client answer questions like "how much did I spend in June, and on whom?" from it.
 
 khata never signs in to a payment app, never acts inside a payment-app session, and never asks for a UPI PIN or OTP.
 
@@ -12,7 +12,7 @@ Early development.
 
 | UPI app | Status |
 | --- | --- |
-| Google Pay | Statement PDF supported |
+| Google Pay | Statement PDF and Google Takeout supported |
 | PhonePe | Planned |
 | Paytm | Planned |
 
@@ -22,11 +22,16 @@ Requires [Bun](https://bun.com) 1.3 or later.
 
 ```bash
 bun install
-bun run khata ingest ~/Downloads/gpay_statement.pdf
+bun run khata ingest ~/Downloads/gpay_statement.pdf ~/Downloads/Takeout
 bun run khata status
 ```
 
-Get the statement in the Google Pay app: See transaction history, then More, then Get statement. Ingesting the same statement twice changes nothing, and a statement whose totals do not add up is rejected whole.
+Two Google Pay sources, best used together:
+
+- **Statement PDF** for a verified period: in the Google Pay app, See transaction history, then More, then Get statement. A statement whose totals do not add up is rejected whole.
+- **Google Takeout** for years of history: at takeout.google.com, Deselect all, select Google Pay and My Activity (only Google Pay, JSON format), and export. Ingest the zip, the unzipped `Takeout` folder, or `MyActivity.json`. Only completed payments count.
+
+Within a statement's period only the statement counts; Takeout fills every other day. Ingesting the same file twice changes nothing, and the result is the same whatever order files arrive in. After upgrading khata, `bun run khata reparse` rebuilds every transaction with the newest parsers.
 
 Connect it to Claude Code:
 
@@ -50,7 +55,7 @@ The ledger lives in `~/.khata/khata.db`. Set `KHATA_HOME` to keep it elsewhere.
 | `search_transactions` | Individual payments filtered by date, direction, counterparty, or amount, 50 per page |
 | `summarize_transactions` | Money sent and received grouped by month, counterparty, funding account, or UPI app |
 | `run_sql` | One read-only SQL query, up to 200 rows |
-| `ingest_statements` | Add statement PDFs or folders of them |
+| `ingest` | Add statement PDFs and Google Takeout exports |
 
 ## Development
 

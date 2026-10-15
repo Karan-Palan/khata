@@ -69,7 +69,8 @@ Add a dependency only when Bun or an existing dependency cannot do the job, and 
 - Pipeline: document bytes, then text layer, then app parser, then statement (transactions and declared totals), then totals check, then store. Every stage except reading bytes and writing the store is a pure function.
 - A statement whose parsed totals differ from its declared totals is rejected whole. Nothing partial is written.
 - Ingestion is idempotent. Document identity is the SHA-256 of its bytes. Transaction identity is the UPI reference, then the app transaction ID, then a content hash. Repeating an ingest or sync changes nothing.
-- Documents are kept as their extracted text layer. Transactions are a projection rebuilt by `khata reparse` after a parser change, and each records the parser version that produced it.
+- Documents are kept as their extracted text layer or their original JSON. Transactions are a projection of every stored document, rebuilt on each ingest and by `khata reparse`, and each records the parser version that produced it. The projection gives the same result whatever order documents arrive in.
+- Within a statement's coverage, only that statement's transactions count. Activity exports fill only days no statement covers, and only with completed payments; the most recent export decides a payment's status. Never match statement and activity rows by amount and time.
 - Money is integer paise. Timestamps are ISO 8601 with offset. Floating point never touches money.
 - One writer at a time. SQLite runs in WAL mode so MCP readers never block.
 - MCP tools are read-only except ingest and sync. Collections default to 50 items with a cursor. Prefer aggregate tools over raw row dumps.
