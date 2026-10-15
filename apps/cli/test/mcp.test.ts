@@ -36,6 +36,7 @@ describe("khata MCP server", () => {
 			["summarize_transactions", true],
 			["run_sql", true],
 			["ingest", false],
+			["sync", false],
 		]);
 	});
 
@@ -45,7 +46,7 @@ describe("khata MCP server", () => {
 		expect((await call(client, "status", {})).structuredContent).toEqual({
 			version: "0.0.0",
 			databasePath: join(khataHome, "khata.db"),
-			schemaVersion: 2,
+			schemaVersion: 3,
 			documentCount: 0,
 			transactionCount: 0,
 			firstOccurredAt: null,

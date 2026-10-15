@@ -20,9 +20,9 @@ export type IngestResult =
 	| { readonly path: string; readonly outcome: "already_ingested" }
 	| { readonly path: string; readonly outcome: "rejected"; readonly reason: string };
 
-type Candidate = { readonly path: string; readonly bytes: Uint8Array; readonly format: "pdf" | "json" };
+export type Candidate = { readonly path: string; readonly bytes: Uint8Array; readonly format: "pdf" | "json" };
 
-type Discovery = Candidate | Extract<IngestResult, { outcome: "rejected" }>;
+export type Discovery = Candidate | Extract<IngestResult, { outcome: "rejected" }>;
 
 const activityFileName = "MyActivity.json";
 const htmlOnlyActivity = /Google Pay\/My Activity\/My Activity\.html$/;
@@ -39,7 +39,7 @@ function rejectedAt(path: string, reason: string): Discovery {
 	return { path, outcome: "rejected", reason };
 }
 
-function discoverInZip(zipPath: string, bytes: Uint8Array): Discovery[] {
+export function discoverInZip(zipPath: string, bytes: Uint8Array): Discovery[] {
 	const entries = unzipSync(bytes, { filter: ({ name }) => formatOf(name) !== null || htmlOnlyActivity.test(name) });
 	const candidates = Object.entries(entries).flatMap(([name, content]): Candidate[] => {
 		const format = formatOf(name);
@@ -129,7 +129,7 @@ async function documentFor(candidate: Candidate, documentId: string): Promise<Do
 	};
 }
 
-async function ingestCandidate(store: Store, candidate: Candidate): Promise<IngestResult> {
+export async function ingestCandidate(store: Store, candidate: Candidate): Promise<IngestResult> {
 	const documentId = new Bun.CryptoHasher("sha256").update(candidate.bytes).digest("hex");
 	if (store.hasDocument(documentId)) return { path: candidate.path, outcome: "already_ingested" };
 	const document = await documentFor(candidate, documentId);

@@ -50,6 +50,8 @@ export type Store = {
 	recordDocument(document: DocumentRecord): void;
 	listDocuments(): readonly StoredDocument[];
 	replaceTransactions(rows: readonly LedgerRow[]): void;
+	hasSyncItem(sourceKey: string, itemKey: string): boolean;
+	recordSyncItem(sourceKey: string, itemKey: string, outcome: string): void;
 	searchTransactions(query: TransactionQuery): TransactionPage;
 	summarizeTransactions(query: SummaryQuery): SummaryReport;
 	close(): void;
@@ -78,7 +80,7 @@ function deserializeContent(kind: DocumentContent["kind"], serialized: string): 
 }
 
 export function openStore(databasePath: string): Store {
-	mkdirSync(dirname(databasePath), { recursive: true });
+	mkdirSync(dirname(databasePath), { recursive: true, mode: 0o700 });
 	const database = new Database(databasePath, { create: true, strict: true });
 	database.run("pragma journal_mode = wal");
 	database.run("pragma synchronous = normal");
@@ -115,6 +117,14 @@ export function openStore(databasePath: string): Store {
 		)
 	`);
 
+	const syncItemExists = database.query<{ found: number }, [string, string]>(
+		"select 1 as found from sync_items where source_key = ? and item_key = ?",
+	);
+	const upsertSyncItem = database.query(`
+		insert into sync_items (source_key, item_key, outcome, seen_at) values (?, ?, ?, ?)
+		on conflict (source_key, item_key) do update set outcome = excluded.outcome, seen_at = excluded.seen_at
+	`);
+
 	const replaceTransactions = database.transaction((rows: readonly LedgerRow[]) => {
 		database.run("delete from transactions");
 		for (const row of rows) insertTransaction.run(row);
@@ -146,6 +156,10 @@ export function openStore(databasePath: string): Store {
 				content: deserializeContent(contentKind, content),
 			})),
 		replaceTransactions: (rows) => replaceTransactions(rows),
+		hasSyncItem: (sourceKey, itemKey) => syncItemExists.get(sourceKey, itemKey) !== null,
+		recordSyncItem: (sourceKey, itemKey, outcome) => {
+			upsertSyncItem.run(sourceKey, itemKey, outcome, new Date().toISOString());
+		},
 		searchTransactions: (query) => searchTransactions(database, query),
 		summarizeTransactions: (query) => summarizeTransactions(database, query),
 		close: () => database.close(),

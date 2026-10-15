@@ -18,7 +18,7 @@ describe("khata CLI", () => {
 		expect(JSON.parse(run.stdout)).toEqual({
 			version: "0.0.0",
 			databasePath: join(khataHome, "khata.db"),
-			schemaVersion: 2,
+			schemaVersion: 3,
 			documentCount: 1,
 			transactionCount: 18,
 			firstOccurredAt: "2018-04-01T09:11:00+05:30",

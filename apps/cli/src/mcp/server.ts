@@ -6,6 +6,11 @@ import { khataVersion, ledgerStatusSchema, readLedgerStatus } from "../status.ts
 import type { SummaryRow, TransactionFilter } from "../store/queries.ts";
 import { runReadOnlySql } from "../store/read-only-sql.ts";
 import type { Store } from "../store/store.ts";
+import type { SourceSyncReport } from "../sync.ts";
+
+export type LedgerActions = {
+	readonly sync: () => Promise<readonly SourceSyncReport[]>;
+};
 
 const sqlRowLimit = 200;
 
@@ -82,7 +87,7 @@ function failure(message: string) {
 	return { content: [{ type: "text" as const, text: message }], isError: true };
 }
 
-export function createMcpServer(store: Store): McpServer {
+export function createMcpServer(store: Store, actions: LedgerActions): McpServer {
 	const server = new McpServer({ name: "khata", version: khataVersion }, { capabilities: { tools: {} }, instructions });
 	const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
 
@@ -207,6 +212,38 @@ export function createMcpServer(store: Store): McpServer {
 			annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
 		},
 		async ({ paths }) => result({ results: await ingestPaths(store, paths) }),
+	);
+
+	server.registerTool(
+		"sync",
+		{
+			title: "Sync sources",
+			description:
+				"Collect and ingest anything new from the user's configured sources: watched folders, Gmail statement attachments, and Takeout exports in Drive.",
+			outputSchema: z.object({
+				sources: z.array(
+					z.object({
+						source: z.string(),
+						ingested: z.number().int(),
+						alreadyIngested: z.number().int(),
+						rejected: z.number().int(),
+						unchanged: z.number().int(),
+						failure: z.string().nullable(),
+						ingestedPaths: z.array(z.string()),
+					}),
+				),
+			}),
+			annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+		},
+		async () => {
+			const reports = await actions.sync();
+			return result({
+				sources: reports.map(({ results, ...summary }) => ({
+					...summary,
+					ingestedPaths: results.flatMap((entry) => (entry.outcome === "ingested" ? [entry.path] : [])),
+				})),
+			});
+		},
 	);
 
 	return server;

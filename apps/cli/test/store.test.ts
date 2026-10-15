@@ -9,7 +9,7 @@ import { openStore } from "../src/store/store.ts";
 import { loadStatementFixture } from "./run-khata.ts";
 
 const emptyStatus = {
-	schemaVersion: 2,
+	schemaVersion: 3,
 	documentCount: 0,
 	transactionCount: 0,
 	firstOccurredAt: null,
@@ -78,7 +78,7 @@ describe("openLedger", () => {
 
 		const store = await openLedger(databasePath);
 		expect(store.status()).toEqual({
-			schemaVersion: 2,
+			schemaVersion: 3,
 			documentCount: 1,
 			transactionCount: 18,
 			firstOccurredAt: "2018-04-01T09:11:00+05:30",

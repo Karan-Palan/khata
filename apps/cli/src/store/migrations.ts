@@ -72,4 +72,16 @@ export const migrations: readonly Migration[] = [
 			create index transactions_document_id on transactions (document_id);
 		`,
 	},
+	{
+		version: 3,
+		sql: `
+			create table sync_items (
+				source_key text not null,
+				item_key text not null,
+				outcome text not null,
+				seen_at text not null,
+				primary key (source_key, item_key)
+			) strict;
+		`,
+	},
 ];

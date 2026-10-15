@@ -29,7 +29,7 @@ export function formatLedgerStatus(status: LedgerStatus): string {
 		`khata ${status.version}`,
 		`database      ${status.databasePath}`,
 		`schema        ${status.schemaVersion}`,
-		`statements    ${status.documentCount}`,
+		`documents     ${status.documentCount}`,
 		`transactions  ${status.transactionCount}`,
 		`covers        ${coverage}`,
 	].join("\n");
