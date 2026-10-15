@@ -47,7 +47,7 @@ Contributors fork, branch as `<github-login>/<short-description>`, open a draft 
 - `.claude/settings.json`, `.codex/config.toml`: agent permissions, including the `.env` lock.
 - `.agents/skills`: pstack engineering skills for Codex, symlinked into `.claude/skills` for Claude Code. Managed by `bunx skills`; never edit by hand.
 - `packages/parsers`: statement parsers. Bytes in, typed statement out. No file system, network, clock, environment, or database access. Runs on Bun, Node, and in browsers. Published on its own. Fixtures in `test/fixtures/<upi-app>/` are the specification of each layout.
-- `docs/`: integration notes (`docs/integrations/`) and the measured performance baseline.
+- `docs/`: integration notes (`docs/integrations/`), Google sign-in setup, and the measured performance baseline.
 - `plugin/` (planned): the installable agent plugin for Claude Code and Codex, with MCP wiring and skills.
 
 ## Stack
@@ -101,6 +101,7 @@ Add a dependency only when Bun or an existing dependency cannot do the job, and 
 - The only way to use those credentials is `bun run with-env <command>`, which loads `.env` into that one process. Claude Code asks the maintainer to approve every such call, including in bypass mode.
 - Codex running with `--dangerously-bypass-approvals-and-sandbox` or full access has no sandbox, so nothing in this repository can lock `.env` against it. Never run Codex that way here.
 - Never print, log, or echo a secret value, and never pass one as a command-line argument.
+- khata keeps user tokens, such as Google refresh tokens and OAuth client secrets, only in the OS keychain under the service `app.khata`, never in its own files or logs. The CLI runs with umask 077, so every file it creates in the ledger home is readable only by its owner.
 - Bun does not auto-load `.env` in this repository because `bunfig.toml` sets `env = false`. Do not change that.
 
 ## Local database

@@ -33,6 +33,19 @@ Two Google Pay sources, best used together:
 
 Within a statement's period only the statement counts; Takeout fills every other day. Ingesting the same file twice changes nothing, and the result is the same whatever order files arrive in. After upgrading khata, `bun run khata reparse` rebuilds every transaction with the newest parsers.
 
+## Keep it current
+
+```bash
+bun run khata sources add-folder ~/Downloads          # pick up statements and Takeout exports you download
+bun run khata auth google --client-file client.json   # read-only Gmail attachments and Takeout zips in Drive
+bun run khata sync                                    # collect anything new from every source
+bun run khata schedule enable                         # run sync every 6 hours on this Mac
+```
+
+Files that are not statements are checked once and remembered, so later syncs skip them. See [docs/integrations/google-sign-in.md](docs/integrations/google-sign-in.md) for creating the Google client. Ledger files are readable only by you.
+
+## Connect your agents
+
 Connect it to Claude Code:
 
 ```bash
@@ -56,6 +69,7 @@ The ledger lives in `~/.khata/khata.db`. Set `KHATA_HOME` to keep it elsewhere.
 | `summarize_transactions` | Money sent and received grouped by month, counterparty, funding account, or UPI app |
 | `run_sql` | One read-only SQL query, up to 200 rows |
 | `ingest` | Add statement PDFs and Google Takeout exports |
+| `sync` | Collect and ingest anything new from watched folders, Gmail, and Drive |
 
 ## Development
 
