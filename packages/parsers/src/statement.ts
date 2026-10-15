@@ -8,7 +8,7 @@ export type Transaction = {
 	readonly occurredAt: string;
 	readonly direction: Direction;
 	readonly amountPaise: number;
-	readonly counterpartyName: string;
+	readonly counterpartyName: string | null;
 	readonly counterpartyUpiId: string | null;
 	readonly upiReference: string | null;
 	readonly appTransactionId: string | null;

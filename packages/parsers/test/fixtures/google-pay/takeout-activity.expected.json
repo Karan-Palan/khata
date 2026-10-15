@@ -1,0 +1,780 @@
+{
+	"upiApp": "google_pay",
+	"layout": "takeout_my_activity_json",
+	"parserVersion": "google-pay/takeout-activity@1",
+	"coveredFrom": "2015-12-30",
+	"coveredTo": "2018-10-14",
+	"payments": [
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2015-12-30T16:04:44+05:30",
+				"direction": "received",
+				"amountPaise": 444464,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000056",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "pending",
+			"transaction": {
+				"occurredAt": "2016-02-03T22:04:09+05:30",
+				"direction": "sent",
+				"amountPaise": 436545,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000055",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "pending",
+			"transaction": {
+				"occurredAt": "2016-04-06T02:35:28+05:30",
+				"direction": "sent",
+				"amountPaise": 428626,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000054",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2016-10-03T00:02:15+05:30",
+				"direction": "sent",
+				"amountPaise": 420707,
+				"counterpartyName": "Counterparty 012",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000053",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2016-11-30T06:30:00+05:30",
+				"direction": "sent",
+				"amountPaise": 412788,
+				"counterpartyName": "Counterparty 012",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000052",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2017-01-08T17:05:19+05:30",
+				"direction": "sent",
+				"amountPaise": 404869,
+				"counterpartyName": "Counterparty 011",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000051",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2017-04-02T20:56:48+05:30",
+				"direction": "sent",
+				"amountPaise": 396950,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000050",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2017-05-05T13:34:12+05:30",
+				"direction": "sent",
+				"amountPaise": 389031,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000049",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2017-05-06T01:00:53+05:30",
+				"direction": "sent",
+				"amountPaise": 381112,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000048",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2017-05-15T23:15:04+05:30",
+				"direction": "received",
+				"amountPaise": 373193,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000047",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2017-05-19T01:38:01+05:30",
+				"direction": "received",
+				"amountPaise": 365274,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000046",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2017-08-22T11:53:31+05:30",
+				"direction": "sent",
+				"amountPaise": 357355,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000045",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "cancelled",
+			"transaction": {
+				"occurredAt": "2017-08-22T11:53:38+05:30",
+				"direction": "sent",
+				"amountPaise": 349436,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000044",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2017-11-27T13:29:11+05:30",
+				"direction": "received",
+				"amountPaise": 341517,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000043",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2017-12-18T15:39:42+05:30",
+				"direction": "received",
+				"amountPaise": 333598,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000042",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-04-01T09:12:51+05:30",
+				"direction": "sent",
+				"amountPaise": 317760,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000040",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-04-02T21:22:21+05:30",
+				"direction": "sent",
+				"amountPaise": 309841,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000039",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-04-26T15:57:37+05:30",
+				"direction": "received",
+				"amountPaise": 301922,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000038",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-04-29T17:31:38+05:30",
+				"direction": "received",
+				"amountPaise": 294003,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000037",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-05-04T01:24:17+05:30",
+				"direction": "sent",
+				"amountPaise": 286084,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000036",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-08-05T11:49:02+05:30",
+				"direction": "sent",
+				"amountPaise": 278165,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000035",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-08-09T22:33:34+05:30",
+				"direction": "received",
+				"amountPaise": 270246,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000034",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-08-17T22:57:55+05:30",
+				"direction": "received",
+				"amountPaise": 262327,
+				"counterpartyName": "Counterparty 003",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000033",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-08-19T17:37:58+05:30",
+				"direction": "sent",
+				"amountPaise": 254408,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000032",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-08-20T12:19:41+05:30",
+				"direction": "sent",
+				"amountPaise": 246489,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000031",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "pending",
+			"transaction": {
+				"occurredAt": "2018-08-27T01:27:29+05:30",
+				"direction": "sent",
+				"amountPaise": 238570,
+				"counterpartyName": "Counterparty 010",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000030",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-08-27T10:58:08+05:30",
+				"direction": "sent",
+				"amountPaise": 230651,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000029",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-08-27T10:58:54+05:30",
+				"direction": "sent",
+				"amountPaise": 222732,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000028",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-09-03T12:27:19+05:30",
+				"direction": "received",
+				"amountPaise": 214813,
+				"counterpartyName": "Counterparty 003",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000027",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "pending",
+			"transaction": {
+				"occurredAt": "2018-09-07T03:59:40+05:30",
+				"direction": "sent",
+				"amountPaise": 206894,
+				"counterpartyName": "Counterparty 009",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000026",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-09-08T02:32:22+05:30",
+				"direction": "sent",
+				"amountPaise": 198975,
+				"counterpartyName": "Counterparty 008",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000025",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "pending",
+			"transaction": {
+				"occurredAt": "2018-09-09T21:48:03+05:30",
+				"direction": "sent",
+				"amountPaise": 191056,
+				"counterpartyName": "Counterparty 007",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000024",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-09-09T22:23:33+05:30",
+				"direction": "sent",
+				"amountPaise": 183137,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000023",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-09-10T18:44:00+05:30",
+				"direction": "sent",
+				"amountPaise": 175218,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000022",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-09-10T22:42:20+05:30",
+				"direction": "sent",
+				"amountPaise": 167299,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000021",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-09-19T03:04:21+05:30",
+				"direction": "sent",
+				"amountPaise": 159380,
+				"counterpartyName": "Counterparty 006",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000020",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-09-21T16:52:44+05:30",
+				"direction": "sent",
+				"amountPaise": 151461,
+				"counterpartyName": "Counterparty 001",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000019",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "failed",
+			"transaction": {
+				"occurredAt": "2018-09-22T17:08:17+05:30",
+				"direction": "sent",
+				"amountPaise": 143542,
+				"counterpartyName": "Counterparty 005",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000018",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-09-26T21:42:10+05:30",
+				"direction": "sent",
+				"amountPaise": 135623,
+				"counterpartyName": "Counterparty 004",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000017",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-09-29T18:56:42+05:30",
+				"direction": "sent",
+				"amountPaise": 127704,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000016",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-09-29T19:14:23+05:30",
+				"direction": "sent",
+				"amountPaise": 119785,
+				"counterpartyName": "Counterparty 001",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000015",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "unknown",
+			"transaction": {
+				"occurredAt": "2018-10-03T14:16:31+05:30",
+				"direction": "received",
+				"amountPaise": 111866,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000014",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-08T01:33:14+05:30",
+				"direction": "received",
+				"amountPaise": 103947,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000013",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-08T14:45:00+05:30",
+				"direction": "received",
+				"amountPaise": 96028,
+				"counterpartyName": "Counterparty 003",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000012",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-11T20:28:41+05:30",
+				"direction": "sent",
+				"amountPaise": 88109,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000011",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-11T23:57:30+05:30",
+				"direction": "sent",
+				"amountPaise": 80190,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000010",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-12T12:01:04+05:30",
+				"direction": "sent",
+				"amountPaise": 72271,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000009",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-12T13:17:16+05:30",
+				"direction": "sent",
+				"amountPaise": 64352,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000008",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-12T13:18:12+05:30",
+				"direction": "received",
+				"amountPaise": 56433,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000007",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-12T13:18:53+05:30",
+				"direction": "sent",
+				"amountPaise": 48514,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000006",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-13T20:31:29+05:30",
+				"direction": "sent",
+				"amountPaise": 40595,
+				"counterpartyName": "Counterparty 002",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000005",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-14T01:48:41+05:30",
+				"direction": "sent",
+				"amountPaise": 32676,
+				"counterpartyName": "Counterparty 001",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000004",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-14T14:02:43+05:30",
+				"direction": "received",
+				"amountPaise": 24757,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000003",
+				"fundingAccount": null,
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-14T17:53:54+05:30",
+				"direction": "sent",
+				"amountPaise": 16838,
+				"counterpartyName": "Counterparty 001",
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000002",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		},
+		{
+			"status": "completed",
+			"transaction": {
+				"occurredAt": "2018-10-14T21:29:47+05:30",
+				"direction": "sent",
+				"amountPaise": 8919,
+				"counterpartyName": null,
+				"counterpartyUpiId": null,
+				"upiReference": null,
+				"appTransactionId": "anonymized000001",
+				"fundingAccount": "Bank Account XXXXXX0000",
+				"note": null
+			}
+		}
+	],
+	"otherEntryCount": 1
+}
