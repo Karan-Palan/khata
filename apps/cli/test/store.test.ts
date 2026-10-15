@@ -1,13 +1,15 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { openLedger } from "../src/ledger/ledger.ts";
+import { migrations } from "../src/store/migrations.ts";
 import { openStore } from "../src/store/store.ts";
-import { loadGooglePayFixture } from "./run-khata.ts";
+import { loadStatementFixture } from "./run-khata.ts";
 
 const emptyStatus = {
-	schemaVersion: 1,
+	schemaVersion: 2,
 	documentCount: 0,
 	transactionCount: 0,
 	firstOccurredAt: null,
@@ -40,19 +42,43 @@ describe("openStore", () => {
 		expect(database.query("pragma journal_mode").get()).toEqual({ journal_mode: "wal" });
 		database.close();
 	});
+
+	test("keeps a document's content exactly as recorded", async () => {
+		const { textLayer, statement } = await loadStatementFixture();
+		const store = openStore(freshDatabasePath());
+		const document = {
+			id: "statement",
+			upiApp: statement.upiApp,
+			layout: statement.layout,
+			periodStart: statement.periodStart,
+			periodEnd: statement.periodEnd,
+			content: { kind: "text_layer" as const, textLayer },
+			source: "fixture",
+		};
+		store.recordDocument(document);
+		expect(store.listDocuments().map(({ ingestedAt: _ingestedAt, ...stored }) => stored)).toEqual([document]);
+		store.close();
+	});
 });
 
-describe("recordStatement", () => {
-	test("stores a statement and reports what it covers", async () => {
-		const { textLayer, statement } = await loadGooglePayFixture();
-		const store = openStore(freshDatabasePath());
-		expect(store.recordStatement({ documentId: "first", source: "fixture", textLayer, statement })).toEqual({
-			transactionsAdded: 18,
-			transactionsAlreadyKnown: 0,
-		});
-		expect(store.hasDocument("first")).toBe(true);
+describe("openLedger", () => {
+	test("upgrades a schema 1 ledger and rebuilds its transactions from the stored statement", async () => {
+		const databasePath = freshDatabasePath();
+		mkdirSync(dirname(databasePath), { recursive: true });
+		const { textLayer } = await loadStatementFixture();
+		const legacy = new Database(databasePath, { create: true });
+		legacy.run(migrations[0]?.sql ?? "");
+		legacy.run("pragma user_version = 1");
+		legacy
+			.query(
+				"insert into documents (id, upi_app, layout, period_start, period_end, text_layer, source, ingested_at) values (?, 'google_pay', 'statement_pdf', '2018-04-01', '2018-09-30', ?, 'fixture', '2026-10-14T00:00:00.000Z')",
+			)
+			.run("legacy-statement", JSON.stringify(textLayer));
+		legacy.close();
+
+		const store = await openLedger(databasePath);
 		expect(store.status()).toEqual({
-			schemaVersion: 1,
+			schemaVersion: 2,
 			documentCount: 1,
 			transactionCount: 18,
 			firstOccurredAt: "2018-04-01T09:11:00+05:30",
@@ -60,38 +86,45 @@ describe("recordStatement", () => {
 		});
 		store.close();
 	});
+});
 
-	test("groups a counterparty's spellings together under the most recent one", async () => {
-		const { textLayer, statement } = await loadGooglePayFixture();
+describe("summarizeTransactions", () => {
+	test("groups a counterparty's spellings under the most recent one and keeps unnamed payments apart", async () => {
+		const { textLayer, statement } = await loadStatementFixture();
 		const store = openStore(freshDatabasePath());
-		store.recordStatement({ documentId: "first", source: "fixture", textLayer, statement });
-		const respelled = statement.transactions.slice(0, 1).map((transaction) => ({
-			...transaction,
-			counterpartyName: "COUNTERPARTY 001",
-			upiReference: "900000000099",
-			occurredAt: "2018-04-06T10:00:00+05:30",
-		}));
-		store.recordStatement({
-			documentId: "second",
+		store.recordDocument({
+			id: "statement",
+			upiApp: statement.upiApp,
+			layout: statement.layout,
+			periodStart: statement.periodStart,
+			periodEnd: statement.periodEnd,
+			content: { kind: "text_layer", textLayer },
 			source: "fixture",
-			textLayer,
-			statement: { ...statement, transactions: respelled },
 		});
-		expect(
-			store.summarizeTransactions({ groupBy: "counterparty", counterparty: "counterparty 001", limit: 10 }).groups,
-		).toEqual([{ group: "COUNTERPARTY 001", sentPaise: 17838, sentCount: 2, receivedPaise: 96000, receivedCount: 1 }]);
-		store.close();
-	});
-
-	test("counts a payment once when two statements contain the same UPI reference", async () => {
-		const { textLayer, statement } = await loadGooglePayFixture();
-		const store = openStore(freshDatabasePath());
-		store.recordStatement({ documentId: "first", source: "fixture", textLayer, statement });
-		expect(store.recordStatement({ documentId: "overlapping", source: "fixture", textLayer, statement })).toEqual({
-			transactionsAdded: 0,
-			transactionsAlreadyKnown: 18,
+		const row = (id: string, counterpartyName: string | null, occurredAt: string, amountPaise: number) => ({
+			id,
+			documentId: "statement",
+			upiApp: "google_pay" as const,
+			parserVersion: "test@1",
+			occurredAt,
+			direction: "sent" as const,
+			amountPaise,
+			counterpartyName,
+			counterpartyUpiId: null,
+			upiReference: null,
+			appTransactionId: id,
+			fundingAccount: null,
+			note: null,
 		});
-		expect(store.status().transactionCount).toBe(18);
+		store.replaceTransactions([
+			row("a", "corner store", "2026-05-01T10:00:00+05:30", 10000),
+			row("b", "CORNER STORE", "2026-05-03T10:00:00+05:30", 20000),
+			row("c", null, "2026-05-02T10:00:00+05:30", 5000),
+		]);
+		expect(store.summarizeTransactions({ groupBy: "counterparty", limit: 10 }).groups).toEqual([
+			{ group: "CORNER STORE", sentPaise: 30000, sentCount: 2, receivedPaise: 0, receivedCount: 0 },
+			{ group: "(no counterparty name)", sentPaise: 5000, sentCount: 1, receivedPaise: 0, receivedCount: 0 },
+		]);
 		store.close();
 	});
 });

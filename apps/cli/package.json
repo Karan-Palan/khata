@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@khata/parsers": "workspace:*",
 		"@modelcontextprotocol/server": "catalog:",
+		"fflate": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

@@ -1,12 +1,13 @@
-import { mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Statement, TextLayer } from "@khata/parsers";
+import type { ActivityExport, Statement, TakeoutActivityEntry, TextLayer } from "@khata/parsers";
+import { rebuildLedger } from "../src/ledger/ledger.ts";
 import { openStore } from "../src/store/store.ts";
 
 export const mainScriptPath = join(import.meta.dir, "..", "src", "main.ts");
 
-const googlePayFixturePrefix = join(
+const fixturesDirectory = join(
 	import.meta.dir,
 	"..",
 	"..",
@@ -16,25 +17,49 @@ const googlePayFixturePrefix = join(
 	"test",
 	"fixtures",
 	"google-pay",
-	"statement-pdf",
 );
 
 export function freshKhataHome(): string {
 	return mkdtempSync(join(tmpdir(), "khata-home-"));
 }
 
-export async function loadGooglePayFixture(): Promise<{ textLayer: TextLayer; statement: Statement }> {
+export async function loadStatementFixture(): Promise<{ textLayer: TextLayer; statement: Statement }> {
 	return {
-		textLayer: await Bun.file(`${googlePayFixturePrefix}.text-layer.json`).json(),
-		statement: await Bun.file(`${googlePayFixturePrefix}.expected.json`).json(),
+		textLayer: await Bun.file(join(fixturesDirectory, "statement-pdf.text-layer.json")).json(),
+		statement: await Bun.file(join(fixturesDirectory, "statement-pdf.expected.json")).json(),
 	};
+}
+
+export async function loadActivityFixture(): Promise<{ entries: TakeoutActivityEntry[]; activity: ActivityExport }> {
+	return {
+		entries: await Bun.file(join(fixturesDirectory, "takeout-activity.activity.json")).json(),
+		activity: await Bun.file(join(fixturesDirectory, "takeout-activity.expected.json")).json(),
+	};
+}
+
+export async function writeTakeoutFolder(parent: string): Promise<string> {
+	const takeout = join(parent, "Takeout");
+	const activityDirectory = join(takeout, "My Activity", "Google Pay");
+	mkdirSync(activityDirectory, { recursive: true });
+	const { entries } = await loadActivityFixture();
+	await Bun.write(join(activityDirectory, "MyActivity.json"), JSON.stringify(entries));
+	return takeout;
 }
 
 export async function seededKhataHome(): Promise<string> {
 	const khataHome = freshKhataHome();
-	const { textLayer, statement } = await loadGooglePayFixture();
+	const { textLayer, statement } = await loadStatementFixture();
 	const store = openStore(join(khataHome, "khata.db"));
-	store.recordStatement({ documentId: "fixture-statement", source: "fixture", textLayer, statement });
+	store.recordDocument({
+		id: "fixture-statement",
+		upiApp: statement.upiApp,
+		layout: statement.layout,
+		periodStart: statement.periodStart,
+		periodEnd: statement.periodEnd,
+		content: { kind: "text_layer", textLayer },
+		source: "fixture",
+	});
+	await rebuildLedger(store);
 	store.close();
 	return khataHome;
 }

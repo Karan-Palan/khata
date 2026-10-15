@@ -19,7 +19,7 @@ export type StoredTransaction = {
 	readonly occurredAt: string;
 	readonly direction: Direction;
 	readonly amountPaise: number;
-	readonly counterpartyName: string;
+	readonly counterpartyName: string | null;
 	readonly upiReference: string | null;
 	readonly fundingAccount: string | null;
 	readonly upiApp: UpiApp;
@@ -52,11 +52,16 @@ export type SummaryReport = {
 	readonly groupCount: number;
 };
 
+export const unnamedCounterpartyLabel = "(no counterparty name)";
+
 type GroupingSql = { readonly key: string; readonly label: string };
 
 const groupings: Readonly<Record<SummaryGrouping, GroupingSql>> = {
 	month: { key: "substr(occurred_at, 1, 7)", label: "substr(occurred_at, 1, 7)" },
-	counterparty: { key: "lower(trim(counterparty_name))", label: "counterparty_name" },
+	counterparty: {
+		key: "coalesce(lower(trim(counterparty_name)), '')",
+		label: `coalesce(counterparty_name, '${unnamedCounterpartyLabel}')`,
+	},
 	funding_account: { key: "coalesce(funding_account, 'unknown')", label: "coalesce(funding_account, 'unknown')" },
 	upi_app: { key: "upi_app", label: "upi_app" },
 };

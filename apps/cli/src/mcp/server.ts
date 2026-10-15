@@ -9,8 +9,9 @@ import type { Store } from "../store/store.ts";
 
 const sqlRowLimit = 200;
 
-const instructions = `khata is the user's UPI payment ledger, built from statements their UPI apps export.
+const instructions = `khata is the user's UPI payment ledger, built from statements and activity exports their UPI apps produce.
 Amounts are Indian rupees: "amount" is formatted for reading and "amountPaise" is the exact integer value.
+Some payments from activity exports have no counterparty name; they appear as null, or as "(no counterparty name)" in summaries.
 Times are India Standard Time (+05:30). "sent" means money left the user; "received" means it arrived.
 Prefer summarize_transactions for totals and breakdowns, search_transactions for individual payments, and run_sql only for questions the other tools cannot answer.`;
 
@@ -47,7 +48,7 @@ const transactionSchema = z.object({
 	direction: z.enum(["sent", "received"]),
 	amount: z.string(),
 	amountPaise: z.number().int(),
-	counterparty: z.string(),
+	counterparty: z.string().nullable(),
 	upiReference: z.string().nullable(),
 	fundingAccount: z.string().nullable(),
 	upiApp: z.string(),
@@ -161,7 +162,7 @@ export function createMcpServer(store: Store): McpServer {
 		"run_sql",
 		{
 			title: "Run read-only SQL",
-			description: `Run one read-only SQLite query against the ledger and get up to ${sqlRowLimit} rows. Table transactions(id, document_id, upi_app, occurred_at TEXT ISO 8601 +05:30, direction 'sent'|'received', amount_paise INTEGER, counterparty_name, counterparty_upi_id, upi_reference, app_transaction_id, funding_account, note, parser_version). Table documents(id, upi_app, layout, period_start, period_end, source, ingested_at).`,
+			description: `Run one read-only SQLite query against the ledger and get up to ${sqlRowLimit} rows. Table transactions(id, document_id, upi_app, occurred_at TEXT ISO 8601 +05:30, direction 'sent'|'received', amount_paise INTEGER, counterparty_name, counterparty_upi_id, upi_reference, app_transaction_id, funding_account, note, parser_version). Table documents(id, upi_app, layout, content_kind, period_start, period_end, source, ingested_at). Activity-export payments have no upi_reference; within a period a statement covers, only the statement's transactions are kept.`,
 			inputSchema: z.object({ sql: z.string().min(1) }),
 			outputSchema: z.object({
 				columns: z.array(z.string()),
@@ -182,22 +183,23 @@ export function createMcpServer(store: Store): McpServer {
 	);
 
 	server.registerTool(
-		"ingest_statements",
+		"ingest",
 		{
-			title: "Ingest statements",
+			title: "Ingest statements and activity exports",
 			description:
-				"Add UPI app statement PDFs to the ledger. Accepts absolute paths to PDF files or folders. Re-ingesting a statement changes nothing.",
+				"Add Google Pay statement PDFs and Google Takeout exports (a Takeout folder, its zip, or MyActivity.json) to the ledger. Accepts absolute paths. Re-ingesting a document changes nothing.",
 			inputSchema: z.object({ paths: z.array(z.string().min(1)).min(1) }),
 			outputSchema: z.object({
 				results: z.array(
 					z.object({
 						path: z.string(),
 						outcome: z.enum(["ingested", "already_ingested", "rejected"]),
+						documentKind: z.enum(["statement", "activity_export"]).optional(),
 						upiApp: z.string().optional(),
 						periodStart: z.string().optional(),
 						periodEnd: z.string().optional(),
-						transactionsAdded: z.number().int().optional(),
-						transactionsAlreadyKnown: z.number().int().optional(),
+						ledgerTransactionsBefore: z.number().int().optional(),
+						ledgerTransactionsAfter: z.number().int().optional(),
 						reason: z.string().optional(),
 					}),
 				),

@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import type { Statement, TextLayer, Transaction, UpiApp } from "@khata/parsers";
+import type { TakeoutActivityEntry, TextLayer, Transaction, UpiApp } from "@khata/parsers";
 import { type Migration, migrations } from "./migrations.ts";
 import {
 	type SummaryQuery,
@@ -20,39 +20,61 @@ export type StoreStatus = {
 	readonly lastOccurredAt: string | null;
 };
 
-export type StatementRecord = {
-	readonly documentId: string;
+export type DocumentContent =
+	| { readonly kind: "text_layer"; readonly textLayer: TextLayer }
+	| { readonly kind: "activity_json"; readonly entries: readonly TakeoutActivityEntry[] };
+
+export type DocumentRecord = {
+	readonly id: string;
+	readonly upiApp: UpiApp;
+	readonly layout: string;
+	readonly periodStart: string;
+	readonly periodEnd: string;
+	readonly content: DocumentContent;
 	readonly source: string;
-	readonly textLayer: TextLayer;
-	readonly statement: Statement;
 };
 
-export type RecordedStatement = {
-	readonly transactionsAdded: number;
-	readonly transactionsAlreadyKnown: number;
+export type StoredDocument = DocumentRecord & { readonly ingestedAt: string };
+
+export type LedgerRow = Transaction & {
+	readonly id: string;
+	readonly documentId: string;
+	readonly upiApp: UpiApp;
+	readonly parserVersion: string;
 };
 
 export type Store = {
 	readonly databasePath: string;
 	status(): StoreStatus;
 	hasDocument(documentId: string): boolean;
-	recordStatement(record: StatementRecord): RecordedStatement;
+	recordDocument(document: DocumentRecord): void;
+	listDocuments(): readonly StoredDocument[];
+	replaceTransactions(rows: readonly LedgerRow[]): void;
 	searchTransactions(query: TransactionQuery): TransactionPage;
 	summarizeTransactions(query: SummaryQuery): SummaryReport;
 	close(): void;
 };
 
-export function transactionIdentity(upiApp: UpiApp, transaction: Transaction): string {
-	if (transaction.upiReference !== null) return `upi:${transaction.upiReference}`;
-	if (transaction.appTransactionId !== null) return `app:${upiApp}:${transaction.appTransactionId}`;
-	const fingerprint = [
-		upiApp,
-		transaction.occurredAt,
-		transaction.direction,
-		transaction.amountPaise,
-		transaction.counterpartyName,
-	].join("|");
-	return `content:${new Bun.CryptoHasher("sha256").update(fingerprint).digest("hex")}`;
+type DocumentRow = {
+	readonly id: string;
+	readonly upiApp: UpiApp;
+	readonly layout: string;
+	readonly periodStart: string;
+	readonly periodEnd: string;
+	readonly contentKind: DocumentContent["kind"];
+	readonly content: string;
+	readonly source: string;
+	readonly ingestedAt: string;
+};
+
+function serializeContent(content: DocumentContent): string {
+	return JSON.stringify(content.kind === "text_layer" ? content.textLayer : content.entries);
+}
+
+function deserializeContent(kind: DocumentContent["kind"], serialized: string): DocumentContent {
+	return kind === "text_layer"
+		? { kind, textLayer: JSON.parse(serialized) }
+		: { kind, entries: JSON.parse(serialized) };
 }
 
 export function openStore(databasePath: string): Store {
@@ -74,11 +96,17 @@ export function openStore(databasePath: string): Store {
 	`);
 	const documentExists = database.query<{ found: number }, [string]>("select 1 as found from documents where id = ?");
 	const insertDocument = database.query(`
-		insert into documents (id, upi_app, layout, period_start, period_end, text_layer, source, ingested_at)
-		values ($id, $upiApp, $layout, $periodStart, $periodEnd, $textLayer, $source, $ingestedAt)
+		insert into documents (id, upi_app, layout, period_start, period_end, content_kind, content, source, ingested_at)
+		values ($id, $upiApp, $layout, $periodStart, $periodEnd, $contentKind, $content, $source, $ingestedAt)
+	`);
+	const selectDocuments = database.query<DocumentRow, []>(`
+		select id, upi_app as upiApp, layout, period_start as periodStart, period_end as periodEnd,
+			content_kind as contentKind, content, source, ingested_at as ingestedAt
+		from documents
+		order by ingested_at, rowid
 	`);
 	const insertTransaction = database.query(`
-		insert or ignore into transactions (
+		insert into transactions (
 			id, document_id, upi_app, occurred_at, direction, amount_paise, counterparty_name, counterparty_upi_id,
 			upi_reference, app_transaction_id, funding_account, note, parser_version
 		) values (
@@ -87,29 +115,9 @@ export function openStore(databasePath: string): Store {
 		)
 	`);
 
-	const recordStatement = database.transaction(({ documentId, source, textLayer, statement }: StatementRecord) => {
-		insertDocument.run({
-			id: documentId,
-			upiApp: statement.upiApp,
-			layout: statement.layout,
-			periodStart: statement.periodStart,
-			periodEnd: statement.periodEnd,
-			textLayer: JSON.stringify(textLayer),
-			source,
-			ingestedAt: new Date().toISOString(),
-		});
-		let transactionsAdded = 0;
-		for (const transaction of statement.transactions) {
-			const { changes } = insertTransaction.run({
-				id: transactionIdentity(statement.upiApp, transaction),
-				documentId,
-				upiApp: statement.upiApp,
-				parserVersion: statement.parserVersion,
-				...transaction,
-			});
-			transactionsAdded += changes;
-		}
-		return { transactionsAdded, transactionsAlreadyKnown: statement.transactions.length - transactionsAdded };
+	const replaceTransactions = database.transaction((rows: readonly LedgerRow[]) => {
+		database.run("delete from transactions");
+		for (const row of rows) insertTransaction.run(row);
 	});
 
 	return {
@@ -124,7 +132,20 @@ export function openStore(databasePath: string): Store {
 			}),
 		}),
 		hasDocument: (documentId) => documentExists.get(documentId) !== null,
-		recordStatement: (record) => recordStatement(record),
+		recordDocument: ({ content, ...document }) => {
+			insertDocument.run({
+				...document,
+				contentKind: content.kind,
+				content: serializeContent(content),
+				ingestedAt: new Date().toISOString(),
+			});
+		},
+		listDocuments: () =>
+			selectDocuments.all().map(({ contentKind, content, ...document }) => ({
+				...document,
+				content: deserializeContent(contentKind, content),
+			})),
+		replaceTransactions: (rows) => replaceTransactions(rows),
 		searchTransactions: (query) => searchTransactions(database, query),
 		summarizeTransactions: (query) => summarizeTransactions(database, query),
 		close: () => database.close(),

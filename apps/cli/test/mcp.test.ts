@@ -35,7 +35,7 @@ describe("khata MCP server", () => {
 			["search_transactions", true],
 			["summarize_transactions", true],
 			["run_sql", true],
-			["ingest_statements", false],
+			["ingest", false],
 		]);
 	});
 
@@ -45,7 +45,7 @@ describe("khata MCP server", () => {
 		expect((await call(client, "status", {})).structuredContent).toEqual({
 			version: "0.0.0",
 			databasePath: join(khataHome, "khata.db"),
-			schemaVersion: 1,
+			schemaVersion: 2,
 			documentCount: 0,
 			transactionCount: 0,
 			firstOccurredAt: null,
@@ -150,7 +150,7 @@ describe("khata MCP server", () => {
 		const khataHome = freshKhataHome();
 		const client = await connectToKhata(khataHome);
 		const missing = join(khataHome, "missing.pdf");
-		expect((await call(client, "ingest_statements", { paths: [missing] })).structuredContent).toEqual({
+		expect((await call(client, "ingest", { paths: [missing] })).structuredContent).toEqual({
 			results: [{ path: missing, outcome: "rejected", reason: "File not found." }],
 		});
 	});
