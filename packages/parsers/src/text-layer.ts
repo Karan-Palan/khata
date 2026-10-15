@@ -19,7 +19,7 @@ function roundCoordinate(value: number | undefined): number {
 
 export async function extractTextLayer(pdfBytes: Uint8Array): Promise<TextLayer> {
 	const { getDocumentProxy } = await import("unpdf");
-	const pdf = await getDocumentProxy(pdfBytes);
+	const pdf = await getDocumentProxy(pdfBytes, { verbosity: 0 });
 	const pages: TextPage[] = [];
 	for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
 		const content = await (await pdf.getPage(pageNumber)).getTextContent();
