@@ -2,7 +2,13 @@ import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
 import { zipSync } from "fflate";
 import { defaultDriveQuery, defaultGmailQuery, type GoogleSource } from "../src/config.ts";
-import { authorizeGoogle, clientSecretName, refreshTokenName, type SecretStore } from "../src/google/oauth.ts";
+import {
+	authorizeGoogle,
+	clientSecretName,
+	refreshTokenName,
+	type SecretStore,
+	storedClient,
+} from "../src/google/oauth.ts";
 import { syncGoogle } from "../src/sources/google.ts";
 import { openStore } from "../src/store/store.ts";
 import { freshKhataHome, loadActivityFixture } from "./run-khata.ts";
@@ -133,5 +139,19 @@ describe("authorizeGoogle", () => {
 			},
 		);
 		expect(outcome).toEqual({ kind: "failed", reason: "The sign-in response did not match this request." });
+	});
+});
+
+describe("storedClient", () => {
+	test("rebuilds the client from the Keychain so later sign-ins need no client file", async () => {
+		const secrets = memorySecrets({ [clientSecretName("client-123")]: "secret-1" });
+		expect(await storedClient("client-123", secrets)).toEqual({
+			kind: "read",
+			client: { clientId: "client-123", clientSecret: "secret-1" },
+		});
+		expect(await storedClient("client-456", secrets)).toEqual({
+			kind: "failed",
+			reason: "No stored Google client. Run khata auth google --client-file <path> once.",
+		});
 	});
 });

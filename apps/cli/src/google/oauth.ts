@@ -63,6 +63,13 @@ export async function readClientFile(path: string): Promise<ClientFileOutcome> {
 	return { kind: "failed", reason: "Not a Google OAuth client file for a desktop app." };
 }
 
+export async function storedClient(clientId: string, secrets: SecretStore): Promise<ClientFileOutcome> {
+	const clientSecret = await secrets.get(clientSecretName(clientId));
+	return clientSecret === null
+		? { kind: "failed", reason: "No stored Google client. Run khata auth google --client-file <path> once." }
+		: { kind: "read", client: { clientId, clientSecret } };
+}
+
 type TokenResponse = { readonly access_token?: string; readonly refresh_token?: string; readonly id_token?: string };
 
 async function requestTokens(fetchImplementation: Fetch, parameters: Record<string, string>): Promise<TokenResponse> {

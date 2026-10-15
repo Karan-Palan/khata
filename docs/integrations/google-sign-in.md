@@ -13,11 +13,11 @@ In the Google Cloud console, signed in as the account khata will read:
 5. Under Clients, create a client of type Desktop app and download its JSON.
 6. Run `bun run khata auth google --client-file <downloaded.json>` and approve the consent screen in your browser.
 
-khata stores the refresh token and the client secret in the macOS Keychain under the service `app.khata`, and records the account in `~/.khata/config.json`. Revoke access at any time from your Google Account's third-party connections.
+khata stores the refresh token and the client secret in the macOS Keychain under the service `app.khata`, and records the account in `~/.khata/config.json`, so the downloaded client file can be deleted after the first sign-in. Later sign-ins need only `bun run khata auth google`. Revoke access at any time from your Google Account's third-party connections.
 
 ## Known limits
 
-- An app in Testing status gets refresh tokens that Google expires after 7 days for Gmail and Drive scopes, so scheduled sync stops until `khata auth google` runs again. Publishing the app to production removes the limit but requires an application home page, a privacy policy link, and an authorized domain you own on the branding page.
+- An app in Testing status gets refresh tokens that Google expires after 7 days for Gmail and Drive scopes, so scheduled sync reports a sign-in failure until `bun run khata auth google` runs again. Publishing the app to production removes the limit but requires an application home page, a privacy policy link, and an authorized domain you own on the branding page.
 - Until the app is published, only listed test users can sign in, and Google shows an unverified-app warning on the consent screen.
 - The Gmail query defaults to attachments named like `gpay_statement`; the Drive query to zips named like `takeout-`. Both are editable per source in `~/.khata/config.json`.
 

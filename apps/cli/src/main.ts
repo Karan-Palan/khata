@@ -12,7 +12,7 @@ import {
 	withSource,
 } from "./config.ts";
 import { writeFixture } from "./fixture.ts";
-import { authorizeGoogle, keychain, readClientFile } from "./google/oauth.ts";
+import { authorizeGoogle, keychain, readClientFile, storedClient } from "./google/oauth.ts";
 import { formatIngestResult, ingestPaths } from "./ingest.ts";
 import { openLedger, type RebuildReport, rebuildLedger } from "./ledger/ledger.ts";
 import { createMcpServer } from "./mcp/server.ts";
@@ -32,7 +32,7 @@ Commands:
   sources                            List configured sources
   sources add-folder <path>          Watch a folder, such as Downloads, for statements and Takeout exports
   sources remove <source>            Stop syncing a source
-  auth google --client-file <path>   Connect Gmail and Drive (read-only) with your Google OAuth desktop client [--no-open]
+  auth google [--client-file <path>] Connect Gmail and Drive (read-only); the client file is needed only the first time [--no-open]
   schedule enable [--every-minutes 360] | disable | status
                                      Run sync automatically on this Mac
   status [--json]                    Show where the ledger is stored and what it holds
@@ -125,9 +125,14 @@ async function runSources([action, argument]: readonly string[]): Promise<void> 
 }
 
 async function runAuth([provider]: readonly string[], { clientFile, open }: Options): Promise<void> {
-	if (provider !== "google" || clientFile === undefined)
-		fail("Usage: khata auth google --client-file <path>", exitUsage);
-	const clientOutcome = await readClientFile(clientFile);
+	if (provider !== "google") fail("Usage: khata auth google [--client-file <path>]", exitUsage);
+	const existing = (await loadConfig(paths.configPath)).sources.find((source) => source.kind === "google");
+	if (clientFile === undefined && existing === undefined)
+		fail("The first sign-in needs --client-file <path>.", exitUsage);
+	const clientOutcome =
+		clientFile === undefined && existing?.kind === "google"
+			? await storedClient(existing.clientId, keychain)
+			: await readClientFile(clientFile ?? "");
 	if (clientOutcome.kind === "failed") fail(clientOutcome.reason, exitFailure);
 	const { client } = clientOutcome;
 	const authorization = await authorizeGoogle(client, {
@@ -142,11 +147,12 @@ async function runAuth([provider]: readonly string[], { clientFile, open }: Opti
 	await saveConfig(
 		paths.configPath,
 		withSource(config, {
+			gmailQuery: defaultGmailQuery,
+			driveQuery: defaultDriveQuery,
+			...(existing?.kind === "google" && existing.account === authorization.account ? existing : {}),
 			kind: "google",
 			account: authorization.account,
 			clientId: client.clientId,
-			gmailQuery: defaultGmailQuery,
-			driveQuery: defaultDriveQuery,
 		}),
 	);
 	console.log(`Connected ${authorization.account}. Gmail and Drive are read-only; the token is in your Keychain.`);
