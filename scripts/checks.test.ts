@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { findComments } from "./check-comments.ts";
+import { findComments, isSourcePath } from "./check-comments.ts";
 import { commitMessageProblems } from "./check-commit-message.ts";
 
 describe("findComments", () => {
@@ -24,6 +24,19 @@ describe("findComments", () => {
 			"// @ts-ignore because",
 		].join("\n");
 		expect(findComments("sample.ts", source).map(({ line }) => line)).toEqual([3, 4]);
+	});
+});
+
+describe("isSourcePath", () => {
+	test("leaves out installed dependencies and build output", () => {
+		expect(
+			[
+				"apps/cli/src/main.ts",
+				"apps/cli/release/launcher.ts",
+				"apps/cli/dist/npm/khata/bin/khata.js",
+				"packages/parsers/node_modules/unpdf/dist/index.mjs",
+			].map(isSourcePath),
+		).toEqual([true, true, false, false]);
 	});
 });
 

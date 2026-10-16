@@ -8,6 +8,11 @@ export type CommentFinding = {
 
 const toolDirective = /^\s*(biome-ignore\S*\s+\S+:\s*\S|@ts-expect-error\s+\S)/;
 const sourceFiles = new Bun.Glob("{apps,packages,scripts}/**/*.{ts,tsx,js,jsx,mjs,cjs,mts,cts}");
+const generatedDirectories = new Set(["node_modules", "dist"]);
+
+export function isSourcePath(path: string): boolean {
+	return !path.split("/").some((segment) => generatedDirectories.has(segment));
+}
 
 export function findComments(path: string, source: string): CommentFinding[] {
 	return parseSync(path, source)
@@ -23,7 +28,7 @@ async function listSourceFiles(explicitPaths: readonly string[]): Promise<string
 	if (explicitPaths.length > 0) return [...explicitPaths];
 	const paths: string[] = [];
 	for await (const path of sourceFiles.scan({ onlyFiles: true })) {
-		if (!path.split("/").includes("node_modules")) paths.push(path);
+		if (isSourcePath(path)) paths.push(path);
 	}
 	return paths;
 }
