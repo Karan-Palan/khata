@@ -62,11 +62,13 @@ jobs:
         with:
           name: npm-packages
       - run: tar -xzf npm-packages.tgz
-      - name: Install khata from the built packages
+      - name: Install khata from tarballs of the built packages, as from the registry
         run: |
-          mkdir smoke && cd smoke
+          mkdir packs smoke
+          npm pack ./npm/khata "./npm/${{ matrix.package }}" --pack-destination packs
+          cd smoke
           npm init -y > /dev/null
-          npm install --no-audit --no-fund ../npm/khata "../npm/${{ matrix.package }}"
+          npm install --no-audit --no-fund ../packs/*.tgz
       - name: Smoke-test the CLI and the MCP server
         working-directory: smoke
         run: bun ../apps/cli/release/smoke-test.ts node_modules/khata/bin/khata.js
