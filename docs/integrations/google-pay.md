@@ -57,8 +57,8 @@ Observed in October 2026 on an export covering almost three years.
 
 - Within a statement's period, the statement alone supplies transactions, because its declared totals verify it. Matching activity payments to statement rows by amount and time is unreliable: identical amounts minutes apart get paired with the wrong partner, and some completed activity payments never reached the bank at all.
 - Outside every statement period, completed activity payments are added, identified by Google's payment identifier, and the most recent export decides each payment's status.
+- Google's payment identifier stayed the same for every payment across two exports taken a day apart, in October 2026, so a newer export replaces an older one's payments rather than adding to them.
 
 ### Not yet known
 
-- Whether Google's payment identifier stays the same across separate Takeout exports. Re-ingesting the same export is safe either way, because documents are identified by their bytes.
 - How far back Takeout goes for accounts older than the one observed.
