@@ -44,7 +44,7 @@ describe("khata MCP server", () => {
 		const khataHome = freshKhataHome();
 		const client = await connectToKhata(khataHome);
 		expect((await call(client, "status", {})).structuredContent).toEqual({
-			version: "0.0.0",
+			version: "0.1.0",
 			databasePath: join(khataHome, "khata.db"),
 			schemaVersion: 3,
 			documentCount: 0,

@@ -8,7 +8,7 @@ type IngestOutput = { outcome: string; documentKind?: string; ledgerTransactions
 
 describe("khata CLI", () => {
 	test("prints its version", () => {
-		expect(runKhata(["--version"], freshKhataHome())).toEqual({ exitCode: 0, stdout: "0.0.0\n", stderr: "" });
+		expect(runKhata(["--version"], freshKhataHome())).toEqual({ exitCode: 0, stdout: "0.1.0\n", stderr: "" });
 	});
 
 	test("reports the ledger as JSON", async () => {
@@ -16,7 +16,7 @@ describe("khata CLI", () => {
 		const run = runKhata(["status", "--json"], khataHome);
 		expect(run.exitCode).toBe(0);
 		expect(JSON.parse(run.stdout)).toEqual({
-			version: "0.0.0",
+			version: "0.1.0",
 			databasePath: join(khataHome, "khata.db"),
 			schemaVersion: 3,
 			documentCount: 1,

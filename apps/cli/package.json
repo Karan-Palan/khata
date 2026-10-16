@@ -1,6 +1,6 @@
 {
 	"name": "khata",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"private": true,
 	"description": "Your UPI payment history as a local ledger that AI agents can query through MCP.",
 	"license": "MIT",
