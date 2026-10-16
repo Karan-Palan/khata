@@ -35,9 +35,20 @@ export async function loadConfig(configPath: string): Promise<KhataConfig> {
 	return configSchema.parse(await file.json());
 }
 
+function withoutDefaultQueries(source: Source): z.input<typeof sourceSchema> {
+	if (source.kind === "folder") return source;
+	const { gmailQuery, driveQuery, ...identity } = source;
+	return {
+		...identity,
+		...(gmailQuery === defaultGmailQuery ? {} : { gmailQuery }),
+		...(driveQuery === defaultDriveQuery ? {} : { driveQuery }),
+	};
+}
+
 export async function saveConfig(configPath: string, config: KhataConfig): Promise<void> {
 	mkdirSync(dirname(configPath), { recursive: true, mode: 0o700 });
-	await Bun.write(configPath, `${JSON.stringify(config, null, "\t")}\n`);
+	const stored = { sources: config.sources.map(withoutDefaultQueries) };
+	await Bun.write(configPath, `${JSON.stringify(stored, null, "\t")}\n`);
 }
 
 export function withSource(config: KhataConfig, source: Source): KhataConfig {

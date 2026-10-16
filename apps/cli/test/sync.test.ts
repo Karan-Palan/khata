@@ -1,7 +1,15 @@
 import { describe, expect, test } from "bun:test";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { loadConfig, saveConfig, sourceKey, withoutSource, withSource } from "../src/config.ts";
+import {
+	defaultDriveQuery,
+	defaultGmailQuery,
+	loadConfig,
+	saveConfig,
+	sourceKey,
+	withoutSource,
+	withSource,
+} from "../src/config.ts";
 import { launchAgentPlist } from "../src/schedule.ts";
 import { freshKhataHome, runKhata, writeTakeoutFolder } from "./run-khata.ts";
 
@@ -22,6 +30,21 @@ describe("config", () => {
 		expect(withoutSource(loaded, "folder:/tmp/statements").sources.map(sourceKey)).toEqual([
 			"google:someone@example.com",
 		]);
+	});
+
+	test("saves only the Google queries a user changed, so later defaults reach saved configs", async () => {
+		const configPath = join(freshKhataHome(), "config.json");
+		const google = { kind: "google" as const, account: "someone@example.com", clientId: "client-123" };
+		const other = { ...google, account: "other@example.com" };
+		await saveConfig(configPath, {
+			sources: [
+				{ ...google, gmailQuery: defaultGmailQuery, driveQuery: defaultDriveQuery },
+				{ ...other, gmailQuery: "from:statements@example.com", driveQuery: defaultDriveQuery },
+			],
+		});
+		expect(await Bun.file(configPath).json()).toEqual({
+			sources: [google, { ...other, gmailQuery: "from:statements@example.com" }],
+		});
 	});
 });
 
