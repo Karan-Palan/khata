@@ -26,3 +26,6 @@ jobs:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - run: bun run check:ci
+
+  binaries:
+    uses: ./.github/workflows/binaries.yml
