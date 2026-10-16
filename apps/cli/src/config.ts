@@ -3,7 +3,8 @@ import { dirname } from "node:path";
 import * as z from "zod";
 
 export const defaultGmailQuery = "has:attachment filename:pdf filename:gpay_statement";
-export const defaultDriveQuery = "name contains 'takeout-' and mimeType = 'application/zip' and trashed = false";
+export const defaultDriveQuery =
+	"name contains 'takeout-' and (mimeType = 'application/x-zip' or mimeType = 'application/zip' or mimeType = 'application/x-zip-compressed') and trashed = false";
 
 const folderSourceSchema = z.object({ kind: z.literal("folder"), path: z.string().min(1) });
 

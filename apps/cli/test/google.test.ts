@@ -56,7 +56,14 @@ async function fakeGoogle() {
 			return Response.json({ data: Buffer.from("not really a pdf").toString("base64url") });
 		}
 		if (url.pathname === "/drive/v3/files") {
-			return Response.json({ files: [{ id: "f1", name: "takeout-1.zip", modifiedTime: "2026-10-15T00:00:00Z" }] });
+			const takeoutFile = {
+				id: "f1",
+				name: "takeout-1.zip",
+				mimeType: "application/x-zip",
+				modifiedTime: "2026-10-15T00:00:00Z",
+			};
+			const matches = url.searchParams.get("q")?.includes(`mimeType = '${takeoutFile.mimeType}'`) ?? false;
+			return Response.json({ files: matches ? [takeoutFile] : [] });
 		}
 		if (url.pathname === "/drive/v3/files/f1") return new Response(takeoutZip);
 		return new Response("not found", { status: 404 });

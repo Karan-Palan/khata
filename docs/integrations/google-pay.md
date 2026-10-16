@@ -35,6 +35,12 @@ Takeout reaches much further back than the in-app statement, so khata reads it f
 
 At takeout.google.com: Deselect all, select Google Pay, and select My Activity with only Google Pay in its content options and JSON as its format. Export once as a zip. Takeout to Drive, every month or every two months for a year, is the zero-touch alternative. Some browsers unzip the download into a `Takeout` folder; khata reads the folder, the zip, or `MyActivity.json` directly.
 
+Delivered to Drive, observed in October 2026:
+
+- Creating the schedule asked the user to confirm their identity with a passkey. The first export started at once and reached Drive in about three minutes; the rest follow on the same day every two months, and the schedule ends after a year.
+- Each export lands in a `Takeout` folder as two zips: `takeout-<time>-001.zip` holds only `archive_browser.html`, and `takeout-<time>-1-001.zip` holds the Google Pay folder and `My Activity/Google Pay/MyActivity.json`.
+- Drive labels both zips `application/x-zip`, not `application/zip`.
+
 ### Observed contents
 
 Observed in October 2026 on an export covering almost three years.
