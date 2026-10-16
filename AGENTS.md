@@ -40,15 +40,15 @@ Contributors fork, branch as `<github-login>/<short-description>`, open a draft 
 
 ## Repository map
 
-- `apps/cli`: the `khata` executable. CLI, MCP server, store, sources, and secrets. Bun runtime.
+- `apps/cli`: the `khata` executable. CLI, MCP server, store, sources, and secrets. Bun runtime. `apps/cli/release` builds the npm packages: a Node launcher and one compiled executable per platform.
 - `packages/config`: shared TypeScript configuration.
 - `scripts/`: repository checks (comments, commit messages) and the `with-env` door.
 - `docker/`: local Postgres for developing the cloud store.
 - `.claude/settings.json`, `.codex/config.toml`: agent permissions, including the `.env` lock.
 - `.agents/skills`: pstack engineering skills for Codex, symlinked into `.claude/skills` for Claude Code. Managed by `bunx skills`; never edit by hand.
 - `packages/parsers`: statement parsers. Bytes in, typed statement out. No file system, network, clock, environment, or database access. Runs on Bun, Node, and in browsers. Published on its own. Fixtures in `test/fixtures/<upi-app>/` are the specification of each layout.
-- `docs/`: integration notes (`docs/integrations/`), Google sign-in setup, and the measured performance baseline.
-- `plugin/` (planned): the installable agent plugin for Claude Code and Codex, with MCP wiring and skills.
+- `docs/`: integration notes (`docs/integrations/`), Google sign-in setup, releasing, and the measured performance baseline.
+- `plugin/`: the agent plugin for Claude Code and Codex: the MCP server through `npx -y khata@<version> mcp`, and skills. Listed by `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`. Its version always equals `apps/cli`'s.
 
 ## Stack
 
@@ -149,6 +149,7 @@ Add a dependency only when Bun or an existing dependency cannot do the job, and 
 - `bun test`
 - `bun run check:ci`: lint, types, comment check, and tests, exactly as CI runs them
 - `bun run khata <command>`: run the CLI from source, for example `bun run khata ingest <statement.pdf>`
+- `bun run --cwd apps/cli build:npm`: compile the npm packages into `apps/cli/dist/npm`
 - `bun run db:start`, `db:stop`, `db:reset`, `db:psql`: local Postgres in Docker
 - `bun run with-env <command>`: run one command with `.env` loaded, after maintainer approval
 

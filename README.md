@@ -16,47 +16,48 @@ Early development.
 | PhonePe | Planned |
 | Paytm | Planned |
 
-## Try it
+## Install
 
-Requires [Bun](https://bun.com) 1.3 or later.
+The plugin gives Claude Code or Codex the khata MCP server plus skills for setting it up and answering from it.
 
 ```bash
-bun install
-bun run khata ingest ~/Downloads/gpay_statement.pdf ~/Downloads/Takeout
-bun run khata status
+claude plugin marketplace add Karan-Palan/khata
+claude plugin install khata@khata
 ```
+
+```bash
+codex plugin marketplace add Karan-Palan/khata
+codex plugin add khata@khata
+```
+
+Then ask your agent to "set up khata with my Google Pay history".
+
+For any other MCP client, run the server as `npx -y khata mcp`. The command line is the same program: `npx -y khata <command>`, or `npm install -g khata` for a `khata` command. khata needs Node.js 18 or later to install, and runs on macOS and Linux (glibc) on arm64 and x64, and on Windows on x64.
+
+## Add your history
 
 Two Google Pay sources, best used together:
 
 - **Statement PDF** for a verified period: in the Google Pay app, See transaction history, then More, then Get statement. A statement whose totals do not add up is rejected whole.
 - **Google Takeout** for years of history: at takeout.google.com, Deselect all, select Google Pay and My Activity (only Google Pay, JSON format), and export. Ingest the zip, the unzipped `Takeout` folder, or `MyActivity.json`. Only completed payments count.
 
-Within a statement's period only the statement counts; Takeout fills every other day. Ingesting the same file twice changes nothing, and the result is the same whatever order files arrive in. After upgrading khata, `bun run khata reparse` rebuilds every transaction with the newest parsers.
+```bash
+khata ingest ~/Downloads/gpay_statement.pdf ~/Downloads/Takeout
+khata status
+```
+
+Within a statement's period only the statement counts; Takeout fills every other day. Ingesting the same file twice changes nothing, and the result is the same whatever order files arrive in. After upgrading khata, `khata reparse` rebuilds every transaction with the newest parsers.
 
 ## Keep it current
 
 ```bash
-bun run khata sources add-folder ~/Downloads          # pick up statements and Takeout exports you download
-bun run khata auth google --client-file client.json   # read-only Gmail attachments and Takeout zips in Drive
-bun run khata sync                                    # collect anything new from every source
-bun run khata schedule enable                         # run sync every 6 hours on this Mac
+khata sources add-folder ~/Downloads          # pick up statements and Takeout exports you download
+khata auth google --client-file client.json   # read-only Gmail attachments and Takeout zips in Drive
+khata sync                                    # collect anything new from every source
+khata schedule enable                         # run sync every 6 hours on this Mac
 ```
 
-Files that are not statements are checked once and remembered, so later syncs skip them. See [docs/integrations/google-sign-in.md](docs/integrations/google-sign-in.md) for creating the Google client. Ledger files are readable only by you.
-
-## Connect your agents
-
-Connect it to Claude Code:
-
-```bash
-claude mcp add khata -- bun /absolute/path/to/khata/apps/cli/src/main.ts mcp
-```
-
-Connect it to Codex:
-
-```bash
-codex mcp add khata -- bun /absolute/path/to/khata/apps/cli/src/main.ts mcp
-```
+Files that are not statements are checked once and remembered, so later syncs skip them. Choosing Takeout's Add to Drive, every 2 months, makes new history arrive with no clicks. See [docs/integrations/google-sign-in.md](docs/integrations/google-sign-in.md) for creating the Google client. Ledger files are readable only by you.
 
 The ledger lives in `~/.khata/khata.db`. Set `KHATA_HOME` to keep it elsewhere.
 
@@ -73,11 +74,16 @@ The ledger lives in `~/.khata/khata.db`. Set `KHATA_HOME` to keep it elsewhere.
 
 ## Development
 
+Requires [Bun](https://bun.com) 1.3 or later.
+
 ```bash
-bun run check:ci
+bun install
+bun run khata status                   # the CLI from source
+bun run check:ci                       # lint, types, comment check, and tests
+bun run --cwd apps/cli build:npm       # compile the npm packages into apps/cli/dist/npm
 ```
 
-See [AGENTS.md](AGENTS.md) for how this repository is built and [CONTEXT.md](CONTEXT.md) for its vocabulary.
+See [AGENTS.md](AGENTS.md) for how this repository is built, [CONTEXT.md](CONTEXT.md) for its vocabulary, and [docs/releasing.md](docs/releasing.md) for releases.
 
 ## License
 
