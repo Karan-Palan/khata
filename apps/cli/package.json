@@ -1,6 +1,7 @@
 {
 	"name": "khata",
 	"version": "0.0.0",
+	"private": true,
 	"description": "Your UPI payment history as a local ledger that AI agents can query through MCP.",
 	"license": "MIT",
 	"type": "module",
@@ -8,6 +9,7 @@
 		"khata": "./src/main.ts"
 	},
 	"scripts": {
+		"build:npm": "bun release/build.ts",
 		"check-types": "tsc -p tsconfig.json"
 	},
 	"dependencies": {
