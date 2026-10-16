@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
 	defaultDriveQuery,
@@ -10,7 +10,7 @@ import {
 	withoutSource,
 	withSource,
 } from "../src/config.ts";
-import { launchAgentPlist } from "../src/schedule.ts";
+import { installBinary, launchAgentPlist } from "../src/schedule.ts";
 import { freshKhataHome, runKhata, writeTakeoutFolder } from "./run-khata.ts";
 
 type SyncOutput = { source: string; ingested: number; rejected: number; unchanged: number; failure: string | null };
@@ -85,8 +85,7 @@ describe("khata sync", () => {
 describe("launchAgentPlist", () => {
 	test("runs khata sync at load and on the requested interval with the ledger's home", () => {
 		const plist = launchAgentPlist({
-			bunPath: "/Users/someone/.bun/bin/bun",
-			mainScriptPath: "/Users/someone/khata & co/apps/cli/src/main.ts",
+			khataCommand: ["/Users/someone/.bun/bin/bun", "/Users/someone/khata & co/apps/cli/src/main.ts"],
 			khataHome: "/Users/someone/.khata",
 			logPath: "/Users/someone/.khata/sync.log",
 			intervalMinutes: 360,
@@ -94,11 +93,25 @@ describe("launchAgentPlist", () => {
 		expect(
 			[
 				"<key>Label</key><string>app.khata.sync</string>",
-				"<string>/Users/someone/khata &amp; co/apps/cli/src/main.ts</string><string>sync</string>",
+				"<array><string>/Users/someone/.bun/bin/bun</string><string>/Users/someone/khata &amp; co/apps/cli/src/main.ts</string><string>sync</string></array>",
 				"<key>KHATA_HOME</key><string>/Users/someone/.khata</string>",
 				"<key>StartInterval</key><integer>21600</integer>",
 				"<key>RunAtLoad</key><true/>",
 			].filter((fragment) => !plist.includes(fragment)),
 		).toEqual([]);
+	});
+});
+
+describe("installBinary", () => {
+	test("copies the running binary into the ledger's home, readable only by its owner, and reuses it there", async () => {
+		const khataHome = freshKhataHome();
+		const downloadedPath = join(khataHome, "downloaded-khata");
+		await Bun.write(downloadedPath, "khata binary bytes");
+		const installedPath = await installBinary(downloadedPath, khataHome);
+		expect(installedPath).toBe(join(khataHome, "bin", "khata"));
+		expect(await Bun.file(installedPath).text()).toBe("khata binary bytes");
+		expect((statSync(installedPath).mode & 0o777).toString(8)).toBe("700");
+		expect(await installBinary(installedPath, khataHome)).toBe(installedPath);
+		expect(readdirSync(join(khataHome, "bin"))).toEqual(["khata"]);
 	});
 });

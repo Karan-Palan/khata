@@ -1,12 +1,11 @@
-import { unlinkSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, realpathSync, renameSync, unlinkSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 export const launchAgentLabel = "app.khata.sync";
 
 export type ScheduleSettings = {
-	readonly bunPath: string;
-	readonly mainScriptPath: string;
+	readonly khataCommand: readonly string[];
 	readonly khataHome: string;
 	readonly logPath: string;
 	readonly intervalMinutes: number;
@@ -15,6 +14,21 @@ export type ScheduleSettings = {
 export type ScheduleOutcome =
 	| { readonly kind: "done"; readonly message: string }
 	| { readonly kind: "failed"; readonly reason: string };
+
+export function runningAsCompiledBinary(): boolean {
+	return Bun.main.startsWith("/$bunfs/");
+}
+
+export async function installBinary(binaryPath: string, khataHome: string): Promise<string> {
+	const installedPath = join(khataHome, "bin", "khata");
+	if (existsSync(installedPath) && realpathSync(installedPath) === realpathSync(binaryPath)) return installedPath;
+	mkdirSync(dirname(installedPath), { recursive: true, mode: 0o700 });
+	const stagingPath = `${installedPath}.${process.pid}.partial`;
+	await Bun.write(stagingPath, Bun.file(binaryPath));
+	chmodSync(stagingPath, 0o700);
+	renameSync(stagingPath, installedPath);
+	return installedPath;
+}
 
 export function launchAgentPath(): string {
 	return join(homedir(), "Library", "LaunchAgents", `${launchAgentLabel}.plist`);
@@ -32,7 +46,7 @@ export function launchAgentPlist(settings: ScheduleSettings): string {
 		'<plist version="1.0">',
 		"<dict>",
 		`\t<key>Label</key>${string(launchAgentLabel)}`,
-		`\t<key>ProgramArguments</key><array>${string(settings.bunPath)}${string(settings.mainScriptPath)}${string("sync")}</array>`,
+		`\t<key>ProgramArguments</key><array>${[...settings.khataCommand, "sync"].map(string).join("")}</array>`,
 		`\t<key>EnvironmentVariables</key><dict><key>KHATA_HOME</key>${string(settings.khataHome)}</dict>`,
 		`\t<key>StartInterval</key><integer>${settings.intervalMinutes * 60}</integer>`,
 		"\t<key>RunAtLoad</key><true/>",
@@ -64,7 +78,7 @@ export async function enableSchedule(settings: ScheduleSettings): Promise<Schedu
 		return { kind: "failed", reason: `launchctl could not load the schedule: ${loaded.output}` };
 	return {
 		kind: "done",
-		message: `khata sync runs now and every ${settings.intervalMinutes} minutes. Log: ${settings.logPath}`,
+		message: `khata sync runs now and every ${settings.intervalMinutes} minutes from ${settings.khataCommand.at(-1)}. Log: ${settings.logPath}`,
 	};
 }
 

@@ -17,7 +17,14 @@ import { formatIngestResult, ingestPaths } from "./ingest.ts";
 import { openLedger, type RebuildReport, rebuildLedger } from "./ledger/ledger.ts";
 import { createMcpServer } from "./mcp/server.ts";
 import { resolveKhataPaths } from "./paths.ts";
-import { disableSchedule, enableSchedule, launchAgentPath, scheduleIsLoaded } from "./schedule.ts";
+import {
+	disableSchedule,
+	enableSchedule,
+	installBinary,
+	launchAgentPath,
+	runningAsCompiledBinary,
+	scheduleIsLoaded,
+} from "./schedule.ts";
 import { formatLedgerStatus, khataVersion, readLedgerStatus } from "./status.ts";
 import type { Store } from "./store/store.ts";
 import { formatSyncReports, type SourceSyncReport, syncSources } from "./sync.ts";
@@ -161,8 +168,9 @@ async function runAuth([provider]: readonly string[], { clientFile, open }: Opti
 async function runSchedule([action]: readonly string[], { everyMinutes }: Options): Promise<void> {
 	if (action === "enable") {
 		const outcome = await enableSchedule({
-			bunPath: process.execPath,
-			mainScriptPath: resolve(import.meta.dir, "main.ts"),
+			khataCommand: runningAsCompiledBinary()
+				? [await installBinary(process.execPath, paths.home)]
+				: [process.execPath, resolve(import.meta.dir, "main.ts")],
 			khataHome: paths.home,
 			logPath: paths.syncLogPath,
 			intervalMinutes: positiveWholeNumber(everyMinutes, 360, "--every-minutes"),
