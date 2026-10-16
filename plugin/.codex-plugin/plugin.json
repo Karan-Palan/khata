@@ -1,0 +1,26 @@
+{
+	"name": "khata",
+	"version": "0.0.0",
+	"description": "Your UPI payment history as a local ledger you can ask about. Bundles the khata MCP server and skills for setting it up and answering money questions from it.",
+	"author": { "name": "Karan Palan", "url": "https://github.com/Karan-Palan" },
+	"homepage": "https://github.com/Karan-Palan/khata",
+	"repository": "https://github.com/Karan-Palan/khata",
+	"license": "MIT",
+	"keywords": ["upi", "google-pay", "ledger", "spending", "india", "mcp"],
+	"skills": "./skills/",
+	"mcpServers": "./.mcp.json",
+	"interface": {
+		"displayName": "khata",
+		"shortDescription": "Ask questions about your UPI payments",
+		"longDescription": "khata turns the statements and Google Takeout exports that Google Pay already gives you into one ledger on your own machine, then answers questions like how much you spent last month and on whom. It never signs in to a payment app and never asks for a UPI PIN or OTP.",
+		"developerName": "Karan Palan",
+		"category": "Productivity",
+		"capabilities": ["Read", "Write"],
+		"websiteURL": "https://github.com/Karan-Palan/khata",
+		"defaultPrompt": [
+			"Set up khata with my Google Pay history",
+			"How much did I spend last month, and on whom?",
+			"Find every payment over 5,000 rupees this year"
+		]
+	}
+}

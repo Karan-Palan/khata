@@ -1,0 +1,19 @@
+{
+	"$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+	"name": "khata",
+	"description": "khata: your UPI payment history as a local ledger that AI agents can query.",
+	"owner": { "name": "Karan Palan", "url": "https://github.com/Karan-Palan" },
+	"plugins": [
+		{
+			"name": "khata",
+			"source": "./plugin",
+			"description": "Your UPI payment history as a local ledger you can ask about. Bundles the khata MCP server and skills for setting it up and answering money questions from it.",
+			"author": { "name": "Karan Palan", "url": "https://github.com/Karan-Palan" },
+			"homepage": "https://github.com/Karan-Palan/khata",
+			"repository": "https://github.com/Karan-Palan/khata",
+			"license": "MIT",
+			"category": "productivity",
+			"keywords": ["upi", "google-pay", "ledger", "spending", "india", "mcp"]
+		}
+	]
+}

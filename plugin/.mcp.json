@@ -1,0 +1,8 @@
+{
+	"mcpServers": {
+		"khata": {
+			"command": "npx",
+			"args": ["-y", "khata@0.0.0", "mcp"]
+		}
+	}
+}
