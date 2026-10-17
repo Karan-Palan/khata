@@ -7,9 +7,12 @@ import type { SummaryRow, TransactionFilter } from "../store/queries.ts";
 import type { Store } from "../store/store.ts";
 import type { SourceSyncReport } from "../sync.ts";
 
-export type LedgerActions = {
-	readonly sync: () => Promise<readonly SourceSyncReport[]>;
-};
+export type LedgerAccess =
+	| {
+			readonly kind: "local";
+			readonly sync: () => Promise<readonly SourceSyncReport[]>;
+	  }
+	| { readonly kind: "remote" };
 
 const sqlRowLimit = 200;
 
@@ -86,7 +89,7 @@ function failure(message: string) {
 	return { content: [{ type: "text" as const, text: message }], isError: true };
 }
 
-export function createMcpServer(store: Store, actions: LedgerActions): McpServer {
+export function createMcpServer(store: Store, access: LedgerAccess): McpServer {
 	const server = new McpServer({ name: "khata", version: khataVersion }, { capabilities: { tools: {} }, instructions });
 	const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
 
@@ -186,64 +189,66 @@ export function createMcpServer(store: Store, actions: LedgerActions): McpServer
 		},
 	);
 
-	server.registerTool(
-		"ingest",
-		{
-			title: "Ingest statements and activity exports",
-			description:
-				"Add Google Pay statement PDFs, Google Takeout exports (a Takeout folder, its zip, or MyActivity.json), or the documents of another khata ledger file (.db) to the ledger. Accepts absolute paths. Re-ingesting a document changes nothing.",
-			inputSchema: z.object({ paths: z.array(z.string().min(1)).min(1) }),
-			outputSchema: z.object({
-				results: z.array(
-					z.object({
-						path: z.string(),
-						outcome: z.enum(["ingested", "already_ingested", "rejected"]),
-						documentKind: z.enum(["statement", "activity_export"]).optional(),
-						upiApp: z.string().optional(),
-						periodStart: z.string().optional(),
-						periodEnd: z.string().optional(),
-						ledgerTransactionsBefore: z.number().int().optional(),
-						ledgerTransactionsAfter: z.number().int().optional(),
-						reason: z.string().optional(),
-					}),
-				),
-			}),
-			annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
-		},
-		async ({ paths }) => result({ results: await ingestPaths(store, paths) }),
-	);
+	if (access.kind === "local") {
+		server.registerTool(
+			"ingest",
+			{
+				title: "Ingest statements and activity exports",
+				description:
+					"Add Google Pay statement PDFs, Google Takeout exports (a Takeout folder, its zip, or MyActivity.json), or the documents of another khata ledger file (.db) to the ledger. Accepts absolute paths. Re-ingesting a document changes nothing.",
+				inputSchema: z.object({ paths: z.array(z.string().min(1)).min(1) }),
+				outputSchema: z.object({
+					results: z.array(
+						z.object({
+							path: z.string(),
+							outcome: z.enum(["ingested", "already_ingested", "rejected"]),
+							documentKind: z.enum(["statement", "activity_export"]).optional(),
+							upiApp: z.string().optional(),
+							periodStart: z.string().optional(),
+							periodEnd: z.string().optional(),
+							ledgerTransactionsBefore: z.number().int().optional(),
+							ledgerTransactionsAfter: z.number().int().optional(),
+							reason: z.string().optional(),
+						}),
+					),
+				}),
+				annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+			},
+			async ({ paths }) => result({ results: await ingestPaths(store, paths) }),
+		);
 
-	server.registerTool(
-		"sync",
-		{
-			title: "Sync sources",
-			description:
-				"Collect and ingest anything new from the user's configured sources: watched folders, Gmail statement attachments, and Takeout exports in Drive.",
-			outputSchema: z.object({
-				sources: z.array(
-					z.object({
-						source: z.string(),
-						ingested: z.number().int(),
-						alreadyIngested: z.number().int(),
-						rejected: z.number().int(),
-						unchanged: z.number().int(),
-						failure: z.string().nullable(),
-						ingestedPaths: z.array(z.string()),
-					}),
-				),
-			}),
-			annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
-		},
-		async () => {
-			const reports = await actions.sync();
-			return result({
-				sources: reports.map(({ results, ...summary }) => ({
-					...summary,
-					ingestedPaths: results.flatMap((entry) => (entry.outcome === "ingested" ? [entry.path] : [])),
-				})),
-			});
-		},
-	);
+		server.registerTool(
+			"sync",
+			{
+				title: "Sync sources",
+				description:
+					"Collect and ingest anything new from the user's configured sources: watched folders, Gmail statement attachments, and Takeout exports in Drive.",
+				outputSchema: z.object({
+					sources: z.array(
+						z.object({
+							source: z.string(),
+							ingested: z.number().int(),
+							alreadyIngested: z.number().int(),
+							rejected: z.number().int(),
+							unchanged: z.number().int(),
+							failure: z.string().nullable(),
+							ingestedPaths: z.array(z.string()),
+						}),
+					),
+				}),
+				annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+			},
+			async () => {
+				const reports = await access.sync();
+				return result({
+					sources: reports.map(({ results, ...summary }) => ({
+						...summary,
+						ingestedPaths: results.flatMap((entry) => (entry.outcome === "ingested" ? [entry.path] : [])),
+					})),
+				});
+			},
+		);
+	}
 
 	return server;
 }

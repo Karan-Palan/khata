@@ -1,0 +1,13 @@
+.git
+.env
+.env.*
+**/node_modules
+**/dist
+**/*.db
+**/*.db-shm
+**/*.db-wal
+.claude
+.codex
+.agents
+docs
+plugin

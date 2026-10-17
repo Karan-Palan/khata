@@ -25,6 +25,7 @@ import {
 	runningAsCompiledBinary,
 	scheduleIsLoaded,
 } from "./schedule.ts";
+import { createKhataServer, minimumServerTokenLength } from "./server.ts";
 import { formatLedgerStatus, khataVersion, readLedgerStatus } from "./status.ts";
 import type { Store, StoreLocation } from "./store/store.ts";
 import { formatSyncReports, type SourceSyncReport, syncSources } from "./sync.ts";
@@ -49,6 +50,11 @@ Commands:
   database disconnect                Go back to the SQLite ledger in KHATA_HOME
   reparse [--json]                   Rebuild every transaction from the stored documents with the current parsers
   mcp                                Serve the ledger to AI agents over MCP (stdio)
+  serve                              Serve read-only MCP over HTTP on $PORT (default 8080), behind KHATA_SERVER_TOKEN
+  server token [--rotate]            Create the server's bearer token in your Keychain
+  server secrets | fly secrets import
+                                     Send the token and the Postgres URL to a hosted server
+  server header                      Print the Authorization header, for agents that run a headers helper
   fixture <source> <prefix>          Write an anonymized test fixture from a statement PDF [--pages 2]
                                      or a Takeout MyActivity.json [--per-shape 3]
   version                            Print the khata version`;
@@ -58,6 +64,7 @@ const exitFailure = 1;
 const paths = resolveKhataPaths(process.env);
 const googleDependencies = { fetch: (input: string, init?: RequestInit) => fetch(input, init), secrets: keychain };
 const databaseUrlSecretName = "postgres:database-url";
+const serverTokenSecretName = "server:token";
 
 type Options = {
 	readonly json: boolean;
@@ -66,6 +73,7 @@ type Options = {
 	readonly clientFile: string | undefined;
 	readonly open: boolean;
 	readonly everyMinutes: string | undefined;
+	readonly rotate: boolean;
 };
 
 function fail(message: string, exitCode: number): never {
@@ -243,6 +251,54 @@ async function runDatabase([action]: readonly string[]): Promise<void> {
 	fail(`Unknown database command.\n\n${usage}`, exitUsage);
 }
 
+async function runServe(): Promise<void> {
+	const serverToken = process.env["KHATA_SERVER_TOKEN"] ?? "";
+	if (serverToken.length < minimumServerTokenLength)
+		fail(
+			`khata serve needs KHATA_SERVER_TOKEN of at least ${minimumServerTokenLength} characters. Create one with khata server token.`,
+			exitUsage,
+		);
+	const port = positiveWholeNumber(process.env["PORT"], 8080, "PORT");
+	const store = await openLedger(await storeLocation());
+	const khataServer = createKhataServer(store, serverToken);
+	const listener = Bun.serve({ hostname: "0.0.0.0", port, fetch: khataServer.fetch });
+	console.error(`khata ${khataVersion} serves ${store.address} on port ${listener.port}`);
+	const shutDown = async () => {
+		await listener.stop();
+		await khataServer.close();
+		await store.close();
+		process.exit(0);
+	};
+	process.on("SIGINT", shutDown);
+	process.on("SIGTERM", shutDown);
+}
+
+async function runServer([action]: readonly string[], { rotate }: Options): Promise<void> {
+	if (action === "token") {
+		if ((await keychain.get(serverTokenSecretName)) !== null && !rotate)
+			fail("A server token is already in your Keychain. Replace it with khata server token --rotate.", exitFailure);
+		const token = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("base64url");
+		await keychain.set(serverTokenSecretName, token);
+		return console.log(
+			"Stored a new server token in your Keychain. Send it to your server with: khata server secrets | fly secrets import",
+		);
+	}
+	if (action !== "secrets" && action !== "header") fail(`Unknown server command.\n\n${usage}`, exitUsage);
+	if (process.stdout.isTTY)
+		fail(
+			`khata server ${action} prints secrets, so it writes only to a pipe, for example: khata server secrets | fly secrets import`,
+			exitUsage,
+		);
+	const token = await keychain.get(serverTokenSecretName);
+	if (token === null) fail("No server token yet. Create one with khata server token.", exitFailure);
+	if (action === "header")
+		return void process.stdout.write(`${JSON.stringify({ Authorization: `Bearer ${token}` })}\n`);
+	const location = await storeLocation();
+	if (location.kind !== "postgres")
+		fail("A hosted server needs a Postgres ledger. Run khata database connect first.", exitFailure);
+	process.stdout.write(`KHATA_SERVER_TOKEN=${token}\nKHATA_DATABASE_URL=${location.url}\n`);
+}
+
 async function runReparse({ json }: Options): Promise<void> {
 	const report = await withLedger(rebuildLedger);
 	console.log(json ? JSON.stringify(report) : formatRebuildReport(report));
@@ -264,7 +320,7 @@ async function runFixture([sourcePath, outputPrefix]: readonly string[], options
 async function runMcp(): Promise<void> {
 	console.log = console.error;
 	const store = await openLedger(await storeLocation());
-	const handle = serveStdio(() => createMcpServer(store, { sync: () => syncNow(store) }));
+	const handle = serveStdio(() => createMcpServer(store, { kind: "local", sync: () => syncNow(store) }));
 	const shutDown = async () => {
 		await handle.close();
 		await store.close();
@@ -286,6 +342,7 @@ async function main(argv: readonly string[]): Promise<void> {
 			"client-file": { type: "string" },
 			"no-open": { type: "boolean", default: false },
 			"every-minutes": { type: "string" },
+			rotate: { type: "boolean", default: false },
 		},
 	});
 	const [command, ...operands] = positionals;
@@ -296,6 +353,7 @@ async function main(argv: readonly string[]): Promise<void> {
 		clientFile: values["client-file"],
 		open: !values["no-open"],
 		everyMinutes: values["every-minutes"],
+		rotate: values.rotate,
 	};
 
 	if (values.version || command === "version") return console.log(khataVersion);
@@ -312,6 +370,8 @@ async function main(argv: readonly string[]): Promise<void> {
 	if (command === "reparse") return runReparse(options);
 	if (command === "fixture") return runFixture(operands, options);
 	if (command === "mcp") return runMcp();
+	if (command === "serve") return runServe();
+	if (command === "server") return runServer(operands, options);
 	if (command === undefined || command === "help") return console.log(usage);
 	fail(`Unknown command: ${command}\n\n${usage}`, exitUsage);
 }

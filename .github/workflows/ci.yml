@@ -53,5 +53,39 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun test apps/cli
 
+  container:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: khata
+          POSTGRES_USER: khata
+          POSTGRES_PASSWORD: khata
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U khata -d khata"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      KHATA_DATABASE_URL: postgres://khata:khata@127.0.0.1:5432/khata
+      KHATA_SERVER_TOKEN: ci-only-server-token-not-used-anywhere-else
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run khata ingest packages/parsers/test/fixtures/google-pay/takeout-activity.activity.json
+      - run: docker build -t khata:ci .
+      - run: docker run -d --name khata --network host -e KHATA_DATABASE_URL -e KHATA_SERVER_TOKEN khata:ci
+      - name: Wait for the server
+        run: for attempt in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/health && exit 0; sleep 1; done; exit 1
+      - run: bun apps/cli/release/server-smoke-test.ts http://127.0.0.1:8080 --transactions 15
+      - if: failure()
+        run: docker logs khata
+
   binaries:
     uses: ./.github/workflows/binaries.yml
