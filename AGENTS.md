@@ -44,15 +44,16 @@ Contributors fork, branch as `<github-login>/<short-description>`, open a draft 
 - `packages/config`: shared TypeScript configuration.
 - `scripts/`: repository checks (comments, commit messages) and the `with-env` door.
 - `docker/`: local Postgres for developing the cloud store.
+- `Dockerfile`, `fly.toml`: the hosted server, `khata serve`, for Fly.io. See `docs/hosting.md`.
 - `.claude/settings.json`, `.codex/config.toml`: agent permissions, including the `.env` lock.
 - `.agents/skills`: pstack engineering skills for Codex, symlinked into `.claude/skills` for Claude Code. Managed by `bunx skills`; never edit by hand.
 - `packages/parsers`: statement parsers. Bytes in, typed statement out. No file system, network, clock, environment, or database access. Runs on Bun, Node, and in browsers. Published on its own. Fixtures in `test/fixtures/<upi-app>/` are the specification of each layout.
-- `docs/`: integration notes (`docs/integrations/`), Google sign-in setup, releasing, and the measured performance baseline.
+- `docs/`: integration notes (`docs/integrations/`), Google sign-in setup, releasing, hosting, and the measured performance baseline.
 - `plugin/`: the agent plugin for Claude Code and Codex: the MCP server through `npx -y khata@<version> mcp`, and skills. Listed by `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`. Its version always equals `apps/cli`'s.
 
 ## Stack
 
-Bun is the runtime, package manager, test runner, and bundler. TypeScript 7 in strict mode. Turborepo, Biome, and Lefthook. zod 4 at every boundary. `unpdf` for PDF text. `bun:sqlite` and `Bun.SQL` for storage (SQLite locally, Postgres in the cloud). `Bun.secrets` for user tokens. `@modelcontextprotocol/server` v2 over stdio. Shared versions are pinned once in the root `catalog`.
+Bun is the runtime, package manager, test runner, and bundler. TypeScript 7 in strict mode. Turborepo, Biome, and Lefthook. zod 4 at every boundary. `unpdf` for PDF text. `bun:sqlite` and `Bun.SQL` for storage (SQLite locally, Postgres in the cloud). `Bun.secrets` for user tokens. `@modelcontextprotocol/server` v2 over stdio, and over HTTP for the hosted server. Shared versions are pinned once in the root `catalog`.
 
 Add a dependency only when Bun or an existing dependency cannot do the job, and state the reason in the pull request.
 
@@ -101,7 +102,7 @@ Add a dependency only when Bun or an existing dependency cannot do the job, and 
 - The only way to use those credentials is `bun run with-env <command>`, which loads `.env` into that one process. Claude Code asks the maintainer to approve every such call, including in bypass mode.
 - Codex running with `--dangerously-bypass-approvals-and-sandbox` or full access has no sandbox, so nothing in this repository can lock `.env` against it. Never run Codex that way here.
 - Never print, log, or echo a secret value, and never pass one as a command-line argument.
-- khata keeps user tokens, such as Google refresh tokens and OAuth client secrets, only in the OS keychain under the service `app.khata`, never in its own files or logs. The CLI runs with umask 077, so every file it creates in the ledger home is readable only by its owner.
+- khata keeps user tokens, such as Google refresh tokens, OAuth client secrets, the Postgres connection URL, and the server token, only in the OS keychain under the service `app.khata`, never in its own files or logs. A hosted server reads `KHATA_DATABASE_URL` and `KHATA_SERVER_TOKEN` from its platform's secrets instead. The CLI runs with umask 077, so every file it creates in the ledger home is readable only by its owner.
 - Bun does not auto-load `.env` in this repository because `bunfig.toml` sets `env = false`. Do not change that.
 
 ## Local database
@@ -150,6 +151,7 @@ Add a dependency only when Bun or an existing dependency cannot do the job, and 
 - `bun run check:ci`: lint, types, comment check, and tests, exactly as CI runs them
 - `bun run khata <command>`: run the CLI from source, for example `bun run khata ingest <statement.pdf>`
 - `bun run --cwd apps/cli build:npm`: compile the npm packages into `apps/cli/dist/npm`
+- `KHATA_TEST_POSTGRES_URL=postgres://khata:khata@127.0.0.1:5432/khata bun test apps/cli`: also run the store tests against Docker Postgres, after `bun run db:start`
 - `bun run db:start`, `db:stop`, `db:reset`, `db:psql`: local Postgres in Docker
 - `bun run with-env <command>`: run one command with `.env` loaded, after maintainer approval
 

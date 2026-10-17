@@ -61,6 +61,10 @@ Files that are not statements are checked once and remembered, so later syncs sk
 
 The ledger lives in `~/.khata/khata.db`. Set `KHATA_HOME` to keep it elsewhere.
 
+## Postgres and hosting
+
+`khata database connect` moves the ledger to Postgres, for example Neon, reading the connection URL from stdin and keeping it in your Keychain. `khata ingest ~/.khata/khata.db` then copies your existing ledger across. `khata serve` runs the read-only MCP tools over HTTP behind a bearer token, ready to deploy on Fly.io with the `Dockerfile` and `fly.toml` here. See [docs/hosting.md](docs/hosting.md).
+
 ## MCP tools
 
 | Tool | What it does |
