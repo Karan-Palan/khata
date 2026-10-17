@@ -20,7 +20,8 @@ export function passwordlessAddress(url: string): string {
 function toSqlValue(value: unknown): SqlValue {
 	if (value === null || value === undefined) return null;
 	if (typeof value === "string" || typeof value === "number") return value;
-	if (typeof value === "bigint" || typeof value === "boolean") return String(value);
+	if (typeof value === "bigint") return Number.isSafeInteger(Number(value)) ? Number(value) : String(value);
+	if (typeof value === "boolean") return String(value);
 	if (value instanceof Date) return value.toISOString();
 	if (value instanceof Uint8Array) return `<${value.byteLength} bytes>`;
 	return JSON.stringify(value);
@@ -57,7 +58,7 @@ async function applyPendingMigrations(sql: SQL): Promise<void> {
 }
 
 export async function openPostgresStore(url: string): Promise<Store> {
-	const sql = new SQL(url);
+	const sql = new SQL(url, { bigint: true });
 	await applyPendingMigrations(sql);
 	const rows: QueryRows = async ({ text, bindings }) => sql.unsafe(text, [...bindings]);
 
