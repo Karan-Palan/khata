@@ -22,6 +22,12 @@ Two sources, best used together:
 
 Within a statement's period only the statement counts, because its totals are checked. Takeout fills every other day, with completed payments only.
 
+### Doing the browser steps yourself
+
+If you can control a browser where the user is already signed in to Google, such as their Chrome or a computer-use tool, offer to click through Takeout for them: Deselect all, tick Google Pay, tick My Activity, then in My Activity's content options Deselect all and tick only Google Pay, and in its formats set Activity records to JSON. Then choose Add to Drive, Export every 2 months for 1 year, `.zip`, and Create export. The same applies to creating the Google OAuth client in the Google Cloud console.
+
+Hand the screen back to the user at any sign-in, password, passkey, two-factor, or verify-it's-you prompt, and ask before accepting terms or granting access on a consent screen. Never open Google Pay, PhonePe, Paytm, or any bank or payment app or site.
+
 ## 3. Ingest the files
 
 Call the `ingest` tool with absolute paths: the statement PDF, the Takeout zip, an unzipped `Takeout` folder, or `MyActivity.json`. Ingesting the same file twice changes nothing.
