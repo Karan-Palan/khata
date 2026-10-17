@@ -72,7 +72,7 @@ export async function syncGoogle(
 			const list = await get<MessageList>(listUrl.toString());
 			for (const { id } of list.messages ?? []) {
 				const itemKey = `gmail:${id}`;
-				if (store.hasSyncItem(sourceKey, itemKey)) {
+				if (await store.hasSyncItem(sourceKey, itemKey)) {
 					unchanged += 1;
 					continue;
 				}
@@ -85,7 +85,7 @@ export async function syncGoogle(
 					results.push(result);
 					outcomes.push(result.outcome);
 				}
-				store.recordSyncItem(sourceKey, itemKey, outcomes.join(",") || "no_pdf");
+				await store.recordSyncItem(sourceKey, itemKey, outcomes.join(",") || "no_pdf");
 			}
 			pageToken = list.nextPageToken;
 			if (pageToken === undefined) break;
@@ -98,12 +98,12 @@ export async function syncGoogle(
 		driveUrl.searchParams.set("pageSize", "50");
 		for (const file of (await get<DriveFileList>(driveUrl.toString())).files ?? []) {
 			const itemKey = `drive:${file.id}:${file.modifiedTime}`;
-			if (store.hasSyncItem(sourceKey, itemKey)) {
+			if (await store.hasSyncItem(sourceKey, itemKey)) {
 				unchanged += 1;
 				continue;
 			}
 			if (Number(file.size ?? 0) > maximumDriveFileBytes) {
-				store.recordSyncItem(sourceKey, itemKey, "too_large");
+				await store.recordSyncItem(sourceKey, itemKey, "too_large");
 				continue;
 			}
 			const bytes = await download(`${driveFiles}/${file.id}?alt=media`);
@@ -113,7 +113,7 @@ export async function syncGoogle(
 				results.push(result);
 				outcomes.push(result.outcome);
 			}
-			store.recordSyncItem(sourceKey, itemKey, outcomes.join(","));
+			await store.recordSyncItem(sourceKey, itemKey, outcomes.join(","));
 		}
 		return { results, unchanged, failure: null };
 	} catch (error) {

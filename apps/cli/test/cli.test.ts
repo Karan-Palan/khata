@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { zipSync } from "fflate";
+import { freshPostgresUrl, testPostgresUrl } from "./postgres.ts";
 import { freshKhataHome, loadActivityFixture, runKhata, seededKhataHome, writeTakeoutFolder } from "./run-khata.ts";
 
 type IngestOutput = { outcome: string; documentKind?: string; ledgerTransactionsAfter?: number; reason?: string };
@@ -17,7 +18,7 @@ describe("khata CLI", () => {
 		expect(run.exitCode).toBe(0);
 		expect(JSON.parse(run.stdout)).toEqual({
 			version: "0.1.0",
-			databasePath: join(khataHome, "khata.db"),
+			database: join(khataHome, "khata.db"),
 			schemaVersion: 3,
 			documentCount: 1,
 			transactionCount: 18,
@@ -106,5 +107,57 @@ describe("khata CLI", () => {
 		expect(run.exitCode).toBe(64);
 		expect(run.stdout).toBe("");
 		expect(run.stderr.startsWith("Unknown command: frobnicate\n")).toBe(true);
+	});
+});
+
+type StatusOutput = { database: string; documentCount: number; transactionCount: number; lastOccurredAt: string };
+
+function ledgerSummary(run: { stdout: string }) {
+	const { documentCount, transactionCount, lastOccurredAt }: StatusOutput = JSON.parse(run.stdout);
+	return { documentCount, transactionCount, lastOccurredAt };
+}
+
+describe("khata ingest of a khata ledger", () => {
+	test("copies every document of another ledger once and rebuilds the same transactions", async () => {
+		const source = await seededKhataHome();
+		await writeTakeoutFolder(source);
+		runKhata(["ingest", join(source, "Takeout")], source);
+		const target = freshKhataHome();
+		const first = runKhata(["ingest", join(source, "khata.db"), "--json"], target);
+		const second = runKhata(["ingest", join(source, "khata.db"), "--json"], target);
+		expect(JSON.parse(first.stdout).map(({ outcome }: IngestOutput) => outcome)).toEqual(["ingested", "ingested"]);
+		expect(JSON.parse(second.stdout).map(({ outcome }: IngestOutput) => outcome)).toEqual([
+			"already_ingested",
+			"already_ingested",
+		]);
+		expect(ledgerSummary(runKhata(["status", "--json"], target))).toEqual(
+			ledgerSummary(runKhata(["status", "--json"], source)),
+		);
+	});
+
+	test("rejects a file that is not a khata ledger", async () => {
+		const khataHome = freshKhataHome();
+		const notALedger = join(khataHome, "notes.db");
+		await Bun.write(notALedger, "plain text");
+		const run = runKhata(["ingest", notALedger, "--json"], khataHome);
+		expect([run.exitCode, JSON.parse(run.stdout)]).toEqual([
+			1,
+			[{ path: notALedger, outcome: "rejected", reason: "Not a khata ledger." }],
+		]);
+	});
+});
+
+describe.skipIf(testPostgresUrl === undefined)("khata on Postgres", () => {
+	test("keeps the ledger in the database KHATA_DATABASE_URL names, with the same transactions as SQLite", async () => {
+		const source = await seededKhataHome();
+		await writeTakeoutFolder(source);
+		runKhata(["ingest", join(source, "Takeout")], source);
+		const url = await freshPostgresUrl(testPostgresUrl ?? "");
+		const postgres = { KHATA_DATABASE_URL: url };
+		const ingested = runKhata(["ingest", join(source, "khata.db"), "--json"], freshKhataHome(), postgres);
+		expect(JSON.parse(ingested.stdout).map(({ outcome }: IngestOutput) => outcome)).toEqual(["ingested", "ingested"]);
+		const status = runKhata(["status", "--json"], freshKhataHome(), postgres);
+		expect(JSON.parse(status.stdout).database).toBe(url.replace("://khata:khata@", "://khata@"));
+		expect(ledgerSummary(status)).toEqual(ledgerSummary(runKhata(["status", "--json"], source)));
 	});
 });

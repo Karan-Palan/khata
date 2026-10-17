@@ -1,4 +1,4 @@
-import { openStore, type Store, type StoredDocument } from "../store/store.ts";
+import { openStore, type Store, type StoredDocument, type StoreLocation } from "../store/store.ts";
 import { type ParsedDocument, type ProjectionReport, projectLedger } from "./projection.ts";
 
 export type RejectedDocument = {
@@ -30,20 +30,20 @@ async function parseStoredDocument(document: StoredDocument): Promise<DocumentPa
 
 export async function rebuildLedger(store: Store): Promise<RebuildReport> {
 	const parses = await Promise.all(
-		store.listDocuments().map(async (document) => ({ document, parse: await parseStoredDocument(document) })),
+		(await store.listDocuments()).map(async (document) => ({ document, parse: await parseStoredDocument(document) })),
 	);
 	const parsedDocuments = parses.flatMap(({ parse }) => (parse.kind === "rejected" ? [] : [parse]));
 	const rejectedDocuments = parses.flatMap(({ document, parse }) =>
 		parse.kind === "rejected" ? [{ documentId: document.id, source: document.source, reason: parse.reason }] : [],
 	);
 	const { rows, report } = projectLedger(parsedDocuments);
-	store.replaceTransactions(rows);
+	await store.replaceTransactions(rows);
 	return { ...report, transactionCount: rows.length, rejectedDocuments };
 }
 
-export async function openLedger(databasePath: string): Promise<Store> {
-	const store = openStore(databasePath);
-	const { documentCount, transactionCount } = store.status();
+export async function openLedger(location: StoreLocation): Promise<Store> {
+	const store = await openStore(location);
+	const { documentCount, transactionCount } = await store.status();
 	if (documentCount > 0 && transactionCount === 0) await rebuildLedger(store);
 	return store;
 }

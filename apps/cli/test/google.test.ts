@@ -21,6 +21,7 @@ function memorySecrets(initial: Record<string, string> = {}): SecretStore & { re
 		set: async (name, value) => {
 			values.set(name, value);
 		},
+		delete: async (name) => values.delete(name),
 	};
 }
 
@@ -73,7 +74,7 @@ async function fakeGoogle() {
 
 describe("syncGoogle", () => {
 	test("ingests Takeout zips from Drive, reports unreadable Gmail attachments, and skips both next time", async () => {
-		const store = openStore(join(freshKhataHome(), "khata.db"));
+		const store = await openStore({ kind: "sqlite", path: join(freshKhataHome(), "khata.db") });
 		const secrets = memorySecrets({
 			[refreshTokenName(source.account)]: "refresh-1",
 			[clientSecretName(source.clientId)]: "secret-1",
@@ -85,22 +86,22 @@ describe("syncGoogle", () => {
 			["gmail:m1/gpay_statement_20180401_20180930.pdf", "rejected"],
 			["drive:takeout-1.zip!/Takeout/My Activity/Google Pay/MyActivity.json", "ingested"],
 		]);
-		expect(store.status().transactionCount).toBe(15);
+		expect((await store.status()).transactionCount).toBe(15);
 
 		const second = await syncGoogle(store, "google:someone@example.com", source, { fetch: google.fetch, secrets });
 		expect([second.results.length, second.unchanged, second.failure]).toEqual([0, 2, null]);
-		store.close();
+		await store.close();
 	});
 
 	test("explains when the account has not been connected", async () => {
-		const store = openStore(join(freshKhataHome(), "khata.db"));
+		const store = await openStore({ kind: "sqlite", path: join(freshKhataHome(), "khata.db") });
 		const google = await fakeGoogle();
 		expect(await syncGoogle(store, "google:x", source, { fetch: google.fetch, secrets: memorySecrets() })).toEqual({
 			results: [],
 			unchanged: 0,
 			failure: "Not signed in as someone@example.com. Run khata auth google.",
 		});
-		store.close();
+		await store.close();
 	});
 });
 

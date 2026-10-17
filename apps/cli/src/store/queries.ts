@@ -1,5 +1,12 @@
-import type { Database, SQLQueryBindings } from "bun:sqlite";
 import type { Direction, UpiApp } from "@khata/parsers";
+
+export type SqlDialect = "sqlite" | "postgres";
+
+export type SqlBinding = string | number;
+
+export type SqlStatement = { readonly text: string; readonly bindings: readonly SqlBinding[] };
+
+export type QueryRows = (statement: SqlStatement) => Promise<readonly Record<string, unknown>[]>;
 
 export type TransactionFilter = {
 	readonly from?: string | undefined;
@@ -54,17 +61,57 @@ export type SummaryReport = {
 
 export const unnamedCounterpartyLabel = "(no counterparty name)";
 
-type GroupingSql = { readonly key: string; readonly label: string };
+const counterpartyLabel = `coalesce(counterparty_name, '${unnamedCounterpartyLabel}')`;
 
-const groupings: Readonly<Record<SummaryGrouping, GroupingSql>> = {
-	month: { key: "substr(occurred_at, 1, 7)", label: "substr(occurred_at, 1, 7)" },
-	counterparty: {
-		key: "coalesce(lower(trim(counterparty_name)), '')",
-		label: `coalesce(counterparty_name, '${unnamedCounterpartyLabel}')`,
-	},
-	funding_account: { key: "coalesce(funding_account, 'unknown')", label: "coalesce(funding_account, 'unknown')" },
-	upi_app: { key: "upi_app", label: "upi_app" },
-};
+function groupingSql(groupBy: SummaryGrouping, dialect: SqlDialect): { readonly key: string; readonly label: string } {
+	switch (groupBy) {
+		case "month":
+			return { key: "substr(occurred_at, 1, 7)", label: "substr(occurred_at, 1, 7)" };
+		case "counterparty":
+			return {
+				key: "coalesce(lower(trim(counterparty_name)), '')",
+				label:
+					dialect === "sqlite"
+						? counterpartyLabel
+						: `(array_agg(${counterpartyLabel} order by occurred_at desc, id desc))[1]`,
+			};
+		case "funding_account":
+			return { key: "coalesce(funding_account, 'unknown')", label: "coalesce(funding_account, 'unknown')" };
+		case "upi_app":
+			return { key: "upi_app", label: "upi_app" };
+	}
+}
+
+const latestRowForSqliteLabels = "max(occurred_at) as latest,";
+
+const aggregates = `
+	cast(coalesce(sum(case when direction = 'sent' then amount_paise end), 0) as bigint) as "sentPaise",
+	count(case when direction = 'sent' then 1 end) as "sentCount",
+	cast(coalesce(sum(case when direction = 'received' then amount_paise end), 0) as bigint) as "receivedPaise",
+	count(case when direction = 'received' then 1 end) as "receivedCount"
+`;
+
+class StatementBuilder {
+	readonly #dialect: SqlDialect;
+	readonly #bindings: SqlBinding[] = [];
+
+	constructor(dialect: SqlDialect) {
+		this.#dialect = dialect;
+	}
+
+	get caseInsensitiveLike(): string {
+		return this.#dialect === "sqlite" ? "like" : "ilike";
+	}
+
+	bind(value: SqlBinding): string {
+		this.#bindings.push(value);
+		return this.#dialect === "sqlite" ? "?" : `$${this.#bindings.length}`;
+	}
+
+	build(text: string): SqlStatement {
+		return { text, bindings: [...this.#bindings] };
+	}
+}
 
 function dayAfter(isoDate: string): string {
 	const date = new Date(`${isoDate}T00:00:00Z`);
@@ -72,77 +119,101 @@ function dayAfter(isoDate: string): string {
 	return date.toISOString().slice(0, 10);
 }
 
-function whereClause(filter: TransactionFilter): { readonly sql: string; readonly bindings: SQLQueryBindings[] } {
-	const conditions: string[] = [];
-	const bindings: SQLQueryBindings[] = [];
-	const add = (condition: string, binding: SQLQueryBindings) => {
-		conditions.push(condition);
-		bindings.push(binding);
-	};
-	if (filter.from !== undefined) add("occurred_at >= ?", filter.from);
-	if (filter.to !== undefined) add("occurred_at < ?", dayAfter(filter.to));
-	if (filter.direction !== undefined) add("direction = ?", filter.direction);
-	if (filter.counterparty !== undefined)
-		add("counterparty_name like ? escape '\\'", `%${escapeLike(filter.counterparty)}%`);
-	if (filter.minAmountPaise !== undefined) add("amount_paise >= ?", filter.minAmountPaise);
-	if (filter.maxAmountPaise !== undefined) add("amount_paise <= ?", filter.maxAmountPaise);
-	return { sql: conditions.length === 0 ? "" : `where ${conditions.join(" and ")}`, bindings };
-}
-
 function escapeLike(text: string): string {
 	return text.replace(/[\\%_]/g, (character) => `\\${character}`);
 }
 
-export function searchTransactions(database: Database, query: TransactionQuery): TransactionPage {
-	const where = whereClause(query);
-	const transactions = database
-		.query<StoredTransaction, SQLQueryBindings[]>(`
-			select occurred_at as occurredAt, direction, amount_paise as amountPaise, counterparty_name as counterpartyName,
-				upi_reference as upiReference, funding_account as fundingAccount, upi_app as upiApp
-			from transactions ${where.sql}
+function whereClause(filter: TransactionFilter, statement: StatementBuilder): string {
+	const conditions: string[] = [];
+	if (filter.from !== undefined) conditions.push(`occurred_at >= ${statement.bind(filter.from)}`);
+	if (filter.to !== undefined) conditions.push(`occurred_at < ${statement.bind(dayAfter(filter.to))}`);
+	if (filter.direction !== undefined) conditions.push(`direction = ${statement.bind(filter.direction)}`);
+	if (filter.counterparty !== undefined) {
+		conditions.push(
+			`counterparty_name ${statement.caseInsensitiveLike} ${statement.bind(`%${escapeLike(filter.counterparty)}%`)} escape '\\'`,
+		);
+	}
+	if (filter.minAmountPaise !== undefined) conditions.push(`amount_paise >= ${statement.bind(filter.minAmountPaise)}`);
+	if (filter.maxAmountPaise !== undefined) conditions.push(`amount_paise <= ${statement.bind(filter.maxAmountPaise)}`);
+	return conditions.length === 0 ? "" : `where ${conditions.join(" and ")}`;
+}
+
+function textOrNull(value: unknown): string | null {
+	return value === null || value === undefined ? null : String(value);
+}
+
+function amounts(row: Record<string, unknown>): Omit<SummaryRow, "group"> {
+	return {
+		sentPaise: Number(row["sentPaise"] ?? 0),
+		sentCount: Number(row["sentCount"] ?? 0),
+		receivedPaise: Number(row["receivedPaise"] ?? 0),
+		receivedCount: Number(row["receivedCount"] ?? 0),
+	};
+}
+
+export async function searchTransactions(
+	rows: QueryRows,
+	dialect: SqlDialect,
+	query: TransactionQuery,
+): Promise<TransactionPage> {
+	const page = new StatementBuilder(dialect);
+	const pageWhere = whereClause(query, page);
+	const pageRows = await rows(
+		page.build(`
+			select occurred_at as "occurredAt", direction, amount_paise as "amountPaise",
+				counterparty_name as "counterpartyName", upi_reference as "upiReference",
+				funding_account as "fundingAccount", upi_app as "upiApp"
+			from transactions ${pageWhere}
 			order by occurred_at desc, id desc
-			limit ? offset ?
-		`)
-		.all(...where.bindings, query.limit, query.offset);
-	const totalMatching =
-		database
-			.query<{ count: number }, SQLQueryBindings[]>(`select count(*) as count from transactions ${where.sql}`)
-			.get(...where.bindings)?.count ?? 0;
+			limit ${page.bind(query.limit)} offset ${page.bind(query.offset)}
+		`),
+	);
+	const count = new StatementBuilder(dialect);
+	const countWhere = whereClause(query, count);
+	const [counted] = await rows(count.build(`select count(*) as "count" from transactions ${countWhere}`));
+	const totalMatching = Number(counted?.["count"] ?? 0);
+	const transactions = pageRows.map((row) => ({
+		occurredAt: String(row["occurredAt"]),
+		direction: row["direction"] as Direction,
+		amountPaise: Number(row["amountPaise"]),
+		counterpartyName: textOrNull(row["counterpartyName"]),
+		upiReference: textOrNull(row["upiReference"]),
+		fundingAccount: textOrNull(row["fundingAccount"]),
+		upiApp: row["upiApp"] as UpiApp,
+	}));
 	const nextOffset = query.offset + transactions.length < totalMatching ? query.offset + transactions.length : null;
 	return { transactions, totalMatching, nextOffset };
 }
 
-export function summarizeTransactions(database: Database, query: SummaryQuery): SummaryReport {
-	const where = whereClause(query);
-	const grouping = groupings[query.groupBy];
-	const ordering = query.groupBy === "month" ? "grouping_key asc" : "sentPaise desc, receivedPaise desc";
-	const aggregates = `
-		coalesce(sum(case when direction = 'sent' then amount_paise end), 0) as sentPaise,
-		count(case when direction = 'sent' then 1 end) as sentCount,
-		coalesce(sum(case when direction = 'received' then amount_paise end), 0) as receivedPaise,
-		count(case when direction = 'received' then 1 end) as receivedCount
-	`;
-	const groups = database
-		.query<SummaryRow, SQLQueryBindings[]>(`
-			select ${grouping.key} as grouping_key, ${grouping.label} as "group", max(occurred_at) as latest, ${aggregates}
-			from transactions ${where.sql}
+export async function summarizeTransactions(
+	rows: QueryRows,
+	dialect: SqlDialect,
+	query: SummaryQuery,
+): Promise<SummaryReport> {
+	const grouping = groupingSql(query.groupBy, dialect);
+	const ordering = query.groupBy === "month" ? "grouping_key asc" : `"sentPaise" desc, "receivedPaise" desc`;
+	const groups = new StatementBuilder(dialect);
+	const groupsWhere = whereClause(query, groups);
+	const groupRows = await rows(
+		groups.build(`
+			select ${grouping.key} as grouping_key, ${grouping.label} as "group",
+				${dialect === "sqlite" ? latestRowForSqliteLabels : ""} ${aggregates}
+			from transactions ${groupsWhere}
 			group by grouping_key
 			order by ${ordering}
-			limit ?
-		`)
-		.all(...where.bindings, query.limit)
-		.map(({ group, sentPaise, sentCount, receivedPaise, receivedCount }) => ({
-			group,
-			sentPaise,
-			sentCount,
-			receivedPaise,
-			receivedCount,
-		}));
-	const totals = database
-		.query<Omit<SummaryRow, "group"> & { groupCount: number }, SQLQueryBindings[]>(`
-			select ${aggregates}, count(distinct ${grouping.key}) as groupCount from transactions ${where.sql}
-		`)
-		.get(...where.bindings) ?? { sentPaise: 0, sentCount: 0, receivedPaise: 0, receivedCount: 0, groupCount: 0 };
-	const { groupCount, ...totalAmounts } = totals;
-	return { groups, totals: totalAmounts, groupCount };
+			limit ${groups.bind(query.limit)}
+		`),
+	);
+	const totals = new StatementBuilder(dialect);
+	const totalsWhere = whereClause(query, totals);
+	const [totalsRow] = await rows(
+		totals.build(
+			`select ${aggregates}, count(distinct ${grouping.key}) as "groupCount" from transactions ${totalsWhere}`,
+		),
+	);
+	return {
+		groups: groupRows.map((row) => ({ group: String(row["group"]), ...amounts(row) })),
+		totals: totalsRow === undefined ? amounts({}) : amounts(totalsRow),
+		groupCount: Number(totalsRow?.["groupCount"] ?? 0),
+	};
 }

@@ -4,7 +4,6 @@ import * as z from "zod";
 import { ingestPaths } from "../ingest.ts";
 import { khataVersion, ledgerStatusSchema, readLedgerStatus } from "../status.ts";
 import type { SummaryRow, TransactionFilter } from "../store/queries.ts";
-import { runReadOnlySql } from "../store/read-only-sql.ts";
 import type { Store } from "../store/store.ts";
 import type { SourceSyncReport } from "../sync.ts";
 
@@ -100,7 +99,7 @@ export function createMcpServer(store: Store, actions: LedgerActions): McpServer
 			outputSchema: ledgerStatusSchema,
 			annotations: readOnly,
 		},
-		async () => result(readLedgerStatus(store)),
+		async () => result(await readLedgerStatus(store)),
 	);
 
 	server.registerTool(
@@ -121,7 +120,7 @@ export function createMcpServer(store: Store, actions: LedgerActions): McpServer
 			annotations: readOnly,
 		},
 		async ({ limit, cursor, ...filter }) => {
-			const page = store.searchTransactions({ ...toFilter(filter), limit, offset: Number(cursor ?? 0) });
+			const page = await store.searchTransactions({ ...toFilter(filter), limit, offset: Number(cursor ?? 0) });
 			return result({
 				transactions: page.transactions.map(({ amountPaise, counterpartyName, ...transaction }) => ({
 					...transaction,
@@ -154,7 +153,7 @@ export function createMcpServer(store: Store, actions: LedgerActions): McpServer
 			annotations: readOnly,
 		},
 		async ({ groupBy, limit, ...filter }) => {
-			const report = store.summarizeTransactions({ ...toFilter(filter), groupBy, limit });
+			const report = await store.summarizeTransactions({ ...toFilter(filter), groupBy, limit });
 			return result({
 				groups: report.groups.map(({ group, ...amounts }) => ({ group, ...withFormattedAmounts(amounts) })),
 				totals: withFormattedAmounts(report.totals),
@@ -167,7 +166,7 @@ export function createMcpServer(store: Store, actions: LedgerActions): McpServer
 		"run_sql",
 		{
 			title: "Run read-only SQL",
-			description: `Run one read-only SQLite query against the ledger and get up to ${sqlRowLimit} rows. Table transactions(id, document_id, upi_app, occurred_at TEXT ISO 8601 +05:30, direction 'sent'|'received', amount_paise INTEGER, counterparty_name, counterparty_upi_id, upi_reference, app_transaction_id, funding_account, note, parser_version). Table documents(id, upi_app, layout, content_kind, period_start, period_end, source, ingested_at). Activity-export payments have no upi_reference; within a period a statement covers, only the statement's transactions are kept.`,
+			description: `Run one read-only ${store.dialect === "sqlite" ? "SQLite" : "PostgreSQL"} query against the ledger and get up to ${sqlRowLimit} rows. Table transactions(id, document_id, upi_app, occurred_at TEXT ISO 8601 +05:30, direction 'sent'|'received', amount_paise INTEGER, counterparty_name, counterparty_upi_id, upi_reference, app_transaction_id, funding_account, note, parser_version). Table documents(id, upi_app, layout, content_kind, period_start, period_end, source, ingested_at). Activity-export payments have no upi_reference; within a period a statement covers, only the statement's transactions are kept.`,
 			inputSchema: z.object({ sql: z.string().min(1) }),
 			outputSchema: z.object({
 				columns: z.array(z.string()),
@@ -177,7 +176,7 @@ export function createMcpServer(store: Store, actions: LedgerActions): McpServer
 			annotations: readOnly,
 		},
 		async ({ sql }) => {
-			const outcome = runReadOnlySql(store.databasePath, sql, sqlRowLimit);
+			const outcome = await store.runReadOnlySql(sql, sqlRowLimit);
 			if (outcome.kind === "failed") return failure(`SQL failed: ${outcome.reason}`);
 			return result({
 				columns: [...outcome.columns],
@@ -192,7 +191,7 @@ export function createMcpServer(store: Store, actions: LedgerActions): McpServer
 		{
 			title: "Ingest statements and activity exports",
 			description:
-				"Add Google Pay statement PDFs and Google Takeout exports (a Takeout folder, its zip, or MyActivity.json) to the ledger. Accepts absolute paths. Re-ingesting a document changes nothing.",
+				"Add Google Pay statement PDFs, Google Takeout exports (a Takeout folder, its zip, or MyActivity.json), or the documents of another khata ledger file (.db) to the ledger. Accepts absolute paths. Re-ingesting a document changes nothing.",
 			inputSchema: z.object({ paths: z.array(z.string().min(1)).min(1) }),
 			outputSchema: z.object({
 				results: z.array(

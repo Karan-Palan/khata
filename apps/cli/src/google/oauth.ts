@@ -15,6 +15,7 @@ export type GoogleClient = { readonly clientId: string; readonly clientSecret: s
 export type SecretStore = {
 	get(name: string): Promise<string | null>;
 	set(name: string, value: string): Promise<void>;
+	delete(name: string): Promise<boolean>;
 };
 
 export type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
@@ -22,6 +23,7 @@ export type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 export const keychain: SecretStore = {
 	get: (name) => Bun.secrets.get({ service: keychainService, name }),
 	set: (name, value) => Bun.secrets.set({ service: keychainService, name, value }),
+	delete: (name) => Bun.secrets.delete({ service: keychainService, name }),
 };
 
 export function refreshTokenName(account: string): string {

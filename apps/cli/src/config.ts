@@ -18,7 +18,12 @@ const googleSourceSchema = z.object({
 
 const sourceSchema = z.discriminatedUnion("kind", [folderSourceSchema, googleSourceSchema]);
 
-const configSchema = z.object({ sources: z.array(sourceSchema).default([]) });
+const databaseSchema = z.object({ kind: z.literal("postgres"), address: z.string().min(1) });
+
+const configSchema = z.object({
+	sources: z.array(sourceSchema).default([]),
+	database: databaseSchema.optional(),
+});
 
 export type FolderSource = z.infer<typeof folderSourceSchema>;
 export type GoogleSource = z.infer<typeof googleSourceSchema>;
@@ -47,15 +52,15 @@ function withoutDefaultQueries(source: Source): z.input<typeof sourceSchema> {
 
 export async function saveConfig(configPath: string, config: KhataConfig): Promise<void> {
 	mkdirSync(dirname(configPath), { recursive: true, mode: 0o700 });
-	const stored = { sources: config.sources.map(withoutDefaultQueries) };
+	const stored = { ...config, sources: config.sources.map(withoutDefaultQueries) };
 	await Bun.write(configPath, `${JSON.stringify(stored, null, "\t")}\n`);
 }
 
 export function withSource(config: KhataConfig, source: Source): KhataConfig {
 	const key = sourceKey(source);
-	return { sources: [...config.sources.filter((existing) => sourceKey(existing) !== key), source] };
+	return { ...config, sources: [...config.sources.filter((existing) => sourceKey(existing) !== key), source] };
 }
 
 export function withoutSource(config: KhataConfig, key: string): KhataConfig {
-	return { sources: config.sources.filter((existing) => sourceKey(existing) !== key) };
+	return { ...config, sources: config.sources.filter((existing) => sourceKey(existing) !== key) };
 }

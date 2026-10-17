@@ -26,7 +26,7 @@ import {
 	scheduleIsLoaded,
 } from "./schedule.ts";
 import { formatLedgerStatus, khataVersion, readLedgerStatus } from "./status.ts";
-import type { Store } from "./store/store.ts";
+import type { Store, StoreLocation } from "./store/store.ts";
 import { formatSyncReports, type SourceSyncReport, syncSources } from "./sync.ts";
 
 process.umask(0o077);
@@ -34,7 +34,8 @@ process.umask(0o077);
 const usage = `Usage: khata <command>
 
 Commands:
-  ingest <path...> [--json]          Add statement PDFs or Google Takeout exports (folders, zips, MyActivity.json)
+  ingest <path...> [--json]          Add statement PDFs, Google Takeout exports (folders, zips, MyActivity.json),
+                                     or every document of another khata ledger (.db)
   sync [--json]                      Collect and ingest anything new from every configured source
   sources                            List configured sources
   sources add-folder <path>          Watch a folder, such as Downloads, for statements and Takeout exports
@@ -43,6 +44,9 @@ Commands:
   schedule enable [--every-minutes 360] | disable | status
                                      Run sync automatically on this Mac
   status [--json]                    Show where the ledger is stored and what it holds
+  database                           Show which database holds the ledger
+  database connect                   Keep the ledger in Postgres; reads the connection URL from stdin
+  database disconnect                Go back to the SQLite ledger in KHATA_HOME
   reparse [--json]                   Rebuild every transaction from the stored documents with the current parsers
   mcp                                Serve the ledger to AI agents over MCP (stdio)
   fixture <source> <prefix>          Write an anonymized test fixture from a statement PDF [--pages 2]
@@ -53,6 +57,7 @@ const exitUsage = 64;
 const exitFailure = 1;
 const paths = resolveKhataPaths(process.env);
 const googleDependencies = { fetch: (input: string, init?: RequestInit) => fetch(input, init), secrets: keychain };
+const databaseUrlSecretName = "postgres:database-url";
 
 type Options = {
 	readonly json: boolean;
@@ -68,12 +73,26 @@ function fail(message: string, exitCode: number): never {
 	process.exit(exitCode);
 }
 
+async function storeLocation(): Promise<StoreLocation> {
+	const fromEnvironment = process.env["KHATA_DATABASE_URL"];
+	if (fromEnvironment !== undefined && fromEnvironment !== "") return { kind: "postgres", url: fromEnvironment };
+	const { database } = await loadConfig(paths.configPath);
+	if (database === undefined) return { kind: "sqlite", path: paths.databasePath };
+	const url = await keychain.get(databaseUrlSecretName);
+	if (url === null)
+		fail(
+			`khata keeps the ledger in ${database.address}, but its connection URL is missing from the keychain. Run khata database connect again.`,
+			exitFailure,
+		);
+	return { kind: "postgres", url };
+}
+
 async function withLedger<T>(run: (store: Store) => Promise<T> | T): Promise<T> {
-	const store = await openLedger(paths.databasePath);
+	const store = await openLedger(await storeLocation());
 	try {
 		return await run(store);
 	} finally {
-		store.close();
+		await store.close();
 	}
 }
 
@@ -189,6 +208,41 @@ async function runSchedule([action]: readonly string[], { everyMinutes }: Option
 	fail(`Unknown schedule command.\n\n${usage}`, exitUsage);
 }
 
+async function runDatabase([action]: readonly string[]): Promise<void> {
+	if (action === undefined) {
+		const location = await storeLocation();
+		return console.log(
+			location.kind === "sqlite"
+				? location.path
+				: (await import("./store/postgres-store.ts")).passwordlessAddress(location.url),
+		);
+	}
+	const config = await loadConfig(paths.configPath);
+	if (action === "connect") {
+		const url = (await Bun.stdin.text()).trim();
+		if (!/^postgres(ql)?:\/\//.test(url))
+			fail(
+				"Pipe a postgres:// connection URL into khata database connect, for example from your password manager.",
+				exitUsage,
+			);
+		const store = await openLedger({ kind: "postgres", url });
+		const { documentCount } = await store.status();
+		await store.close();
+		await keychain.set(databaseUrlSecretName, url);
+		await saveConfig(paths.configPath, { ...config, database: { kind: "postgres", address: store.address } });
+		return console.log(
+			`khata now keeps the ledger in ${store.address}, which holds ${documentCount} documents. The connection URL is in your Keychain. Copy a local ledger into it with khata ingest ${paths.databasePath}.`,
+		);
+	}
+	if (action === "disconnect") {
+		const { database: _database, ...rest } = config;
+		await saveConfig(paths.configPath, rest);
+		await keychain.delete(databaseUrlSecretName);
+		return console.log(`khata now keeps the ledger in ${paths.databasePath}.`);
+	}
+	fail(`Unknown database command.\n\n${usage}`, exitUsage);
+}
+
 async function runReparse({ json }: Options): Promise<void> {
 	const report = await withLedger(rebuildLedger);
 	console.log(json ? JSON.stringify(report) : formatRebuildReport(report));
@@ -209,11 +263,11 @@ async function runFixture([sourcePath, outputPrefix]: readonly string[], options
 
 async function runMcp(): Promise<void> {
 	console.log = console.error;
-	const store = await openLedger(paths.databasePath);
+	const store = await openLedger(await storeLocation());
 	const handle = serveStdio(() => createMcpServer(store, { sync: () => syncNow(store) }));
 	const shutDown = async () => {
 		await handle.close();
-		store.close();
+		await store.close();
 		process.exit(0);
 	};
 	process.on("SIGINT", shutDown);
@@ -249,6 +303,7 @@ async function main(argv: readonly string[]): Promise<void> {
 		const status = await withLedger(readLedgerStatus);
 		return console.log(options.json ? JSON.stringify(status) : formatLedgerStatus(status));
 	}
+	if (command === "database") return runDatabase(operands);
 	if (command === "ingest") return runIngest(operands, options);
 	if (command === "sync") return runSync(options);
 	if (command === "sources") return runSources(operands);

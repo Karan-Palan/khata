@@ -47,14 +47,14 @@ export async function syncFolder(store: Store, sourceKey: string, folder: string
 		const kind = kindOf(basename(path));
 		if (kind === null || details.size > (maximumBytes[kind] ?? 0)) continue;
 		const itemKey = `${path}|${details.size}|${Math.trunc(details.mtimeMs)}`;
-		if (store.hasSyncItem(sourceKey, itemKey)) {
+		if (await store.hasSyncItem(sourceKey, itemKey)) {
 			unchanged += 1;
 			continue;
 		}
 		const fileResults = await ingestPaths(store, [path]);
 		results.push(...fileResults);
 		const outcomes = new Set(fileResults.map(({ outcome }) => outcome));
-		store.recordSyncItem(sourceKey, itemKey, outcomes.size === 1 ? [...outcomes].join("") : "mixed");
+		await store.recordSyncItem(sourceKey, itemKey, outcomes.size === 1 ? [...outcomes].join("") : "mixed");
 	}
 	return { results, unchanged };
 }

@@ -49,8 +49,8 @@ export async function writeTakeoutFolder(parent: string): Promise<string> {
 export async function seededKhataHome(): Promise<string> {
 	const khataHome = freshKhataHome();
 	const { textLayer, statement } = await loadStatementFixture();
-	const store = openStore(join(khataHome, "khata.db"));
-	store.recordDocument({
+	const store = await openStore({ kind: "sqlite", path: join(khataHome, "khata.db") });
+	await store.recordDocument({
 		id: "fixture-statement",
 		upiApp: statement.upiApp,
 		layout: statement.layout,
@@ -60,7 +60,7 @@ export async function seededKhataHome(): Promise<string> {
 		source: "fixture",
 	});
 	await rebuildLedger(store);
-	store.close();
+	await store.close();
 	return khataHome;
 }
 
@@ -70,9 +70,13 @@ export type KhataRun = {
 	readonly stderr: string;
 };
 
-export function runKhata(args: readonly string[], khataHome: string): KhataRun {
+export function runKhata(
+	args: readonly string[],
+	khataHome: string,
+	environment: Readonly<Record<string, string>> = {},
+): KhataRun {
 	const result = Bun.spawnSync(["bun", mainScriptPath, ...args], {
-		env: { ...process.env, KHATA_HOME: khataHome },
+		env: { ...process.env, KHATA_HOME: khataHome, ...environment },
 	});
 	return { exitCode: result.exitCode, stdout: result.stdout.toString(), stderr: result.stderr.toString() };
 }

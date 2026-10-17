@@ -6,7 +6,7 @@ export const khataVersion = packageJson.version;
 
 export const ledgerStatusSchema = z.object({
 	version: z.string(),
-	databasePath: z.string(),
+	database: z.string(),
 	schemaVersion: z.number().int(),
 	documentCount: z.number().int(),
 	transactionCount: z.number().int(),
@@ -16,8 +16,8 @@ export const ledgerStatusSchema = z.object({
 
 export type LedgerStatus = z.infer<typeof ledgerStatusSchema>;
 
-export function readLedgerStatus(store: Store): LedgerStatus {
-	return { version: khataVersion, databasePath: store.databasePath, ...store.status() };
+export async function readLedgerStatus(store: Store): Promise<LedgerStatus> {
+	return { version: khataVersion, database: store.address, ...(await store.status()) };
 }
 
 export function formatLedgerStatus(status: LedgerStatus): string {
@@ -27,7 +27,7 @@ export function formatLedgerStatus(status: LedgerStatus): string {
 			: `${status.firstOccurredAt.slice(0, 10)} to ${status.lastOccurredAt.slice(0, 10)}`;
 	return [
 		`khata ${status.version}`,
-		`database      ${status.databasePath}`,
+		`database      ${status.database}`,
 		`schema        ${status.schemaVersion}`,
 		`documents     ${status.documentCount}`,
 		`transactions  ${status.transactionCount}`,
